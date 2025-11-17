@@ -1,0 +1,443 @@
+{% load static %}
+{% block content %}
+<div class="p-6 bg-gray-50 min-h-screen">
+  <h1 class="text-2xl font-semibold text-gray-800 mb-6">Activity Submissions</h1>
+
+  <!-- Table Container -->
+  <div class="overflow-x-auto bg-white rounded-lg shadow">
+    <table class="min-w-full text-sm text-left text-gray-700" id="submissionTable">
+      <thead class="bg-gray-100 text-xs uppercase font-semibold text-gray-600">
+        <tr>
+          <th rowspan="2" class="px-4 py-3">Student ID</th>
+          <th rowspan="2" class="px-4 py-3">Name</th>
+          <th rowspan="2" class="px-4 py-3">Submitted At</th>
+          <th rowspan="2" class="px-4 py-3">Final Score</th>
+          <th rowspan="2" class="px-4 py-3">Result</th>
+          <th colspan="9" class="px-4 py-3 text-center bg-gray-200 text-[#093704]">
+            Flight & Passenger Requirements
+          </th>
+          <th rowspan="2" class="px-4 py-3">Correctness Summary</th>
+        </tr>
+        <tr>
+          <th class="px-4 py-3 text-center">Trip Type</th>
+          <th class="px-4 py-3 text-center">Travel Class</th>
+          <th class="px-4 py-3 text-center">Adult</th>
+          <th class="px-4 py-3 text-center">Children</th>
+          <th class="px-4 py-3 text-center">Infants</th>
+          <th class="px-4 py-3 text-center">Origin</th>
+          <th class="px-4 py-3 text-center">Destination</th>
+          <th class="px-4 py-3 text-center">Max Price</th>
+          <th class="px-4 py-3 text-center">Passenger</th>
+        </tr>
+      </thead>
+
+      <tbody id="submissionBody">
+        <tr>
+          <td colspan="16" class="text-center text-gray-500 py-6">
+            Loading submissions...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 🟡 MODAL (MUI-style) -->
+<div
+  id="answerModal"
+  class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 transition-all duration-300"
+>
+  <!-- Outer Wrapper for Scroll Behavior -->
+  <div
+    class="w-full h-full flex justify-center items-center p-4 sm:p-6 md:p-8 overflow-y-auto"
+  >
+    <!-- Modal Content -->
+    <div
+      class="bg-white rounded-2xl shadow-xl w-full max-w-2xl transform scale-95 opacity-0 translate-y-8 transition-all duration-300 overflow-hidden"
+      id="answerModalContent"
+    >
+      <!-- Header -->
+      <div
+        class="bg-[#093704] px-5 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0"
+      >
+        <h2 class="text-lg sm:text-xl font-semibold text-[#FFC83D]" id="modalTitle">
+          Answer Details
+        </h2>
+        <button
+          onclick="closeModal()"
+          class="text-[#FFC83D] hover:text-yellow-300 text-2xl leading-none"
+        >
+          &times;
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div
+        class="p-5 sm:p-6 max-h-[70vh] sm:max-h-[75vh] overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+        id="modalContent"
+      >
+        <p class="text-gray-500 text-center">Loading...</p>
+      </div>
+
+      <!-- Footer -->
+      <div
+        class="flex justify-end p-4 sm:p-5 border-t border-gray-200 bg-gray-50 sticky bottom-0"
+      >
+        <button
+          onclick="closeModal()"
+          class="px-4 sm:px-5 py-2 bg-[#093704] hover:bg-[#093704]/80 text-white rounded-md transition"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🧠 SCRIPT -->
+<script>
+const activityId = "{{ activity.id|escapejs }}";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const tableBody = document.getElementById("submissionBody");
+
+  if (!activityId) {
+    tableBody.innerHTML = `<tr><td colspan="16" class="text-center text-red-500 py-6">Missing activity ID.</td></tr>`;
+    return;
+  }
+
+  fetch(`/instructor/h/api/activity/${activityId}/submissions/`)
+    .then(res => (res.ok ? res.json() : Promise.reject(res)))
+    .then(data => {
+      tableBody.innerHTML = "";
+      if (!data || data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="16" class="text-center text-gray-500 py-6">No submissions found.</td></tr>`;
+        return;
+      }
+
+      // Fields to display (passenger added)
+      const fields = ["trip_type", "travel_class", "adults", "children", "infants", "origin", "destination", "max_price", "passenger"];
+
+      data.forEach(sub => {
+        // Build correctness map. passenger uses passenger_summary
+        const correctness = {
+          ...Object.fromEntries(
+            Object.entries(sub.correctness || {})
+              .filter(([k, v]) => k !== "passenger" && k !== "passenger_summary")
+              .map(([k, v]) => [k, v === "Correct"])
+          )
+        };
+
+        // passenger_summary (boolean)
+        correctness["passenger"] = (sub.correctness?.passenger_summary === "Correct");
+
+        const correctCount = Object.values(correctness).filter(v => v).length;
+        const total = Object.keys(correctness).length;
+        const percentage = total ? Math.round((correctCount / total) * 100) : 0;
+
+        // icon renderer. show points for each field if available
+        const icon = (field, isCorrect) => {
+          // points for top-level fields (10 pts) are in sub.points[field] (numbers)
+          // passenger special: show total passenger points
+          let pointsLabel = "";
+          if (field === "passenger") {
+            const pts = (sub.points && typeof sub.points.passenger_total !== "undefined") ? sub.points.passenger_total : null;
+            pointsLabel = pts !== null ? `${pts} pts` : "";
+          } else {
+            const pts = sub.points?.[field];
+            pointsLabel = typeof pts !== "number" ? "" : `${pts} pts`;
+          }
+
+          return `
+            <div 
+              class="cursor-pointer flex flex-col items-center gap-1 font-medium hover:scale-110 transition-transform"
+              onclick='showFieldAnswer(${JSON.stringify(sub).replace(/'/g,"&apos;")}, "${field}")'>
+              <div class="${isCorrect ? "text-green-600" : "text-red-600"} text-lg">${isCorrect ? "✔️" : "❌"}</div>
+              <div class="text-[11px] text-gray-500">${pointsLabel}</div>
+            </div>
+          `;
+        };
+
+        const row = `
+          <tr class="border-b hover:bg-gray-50 transition">
+            <td class="px-4 py-3">${sub.student_number ?? "-"}</td>
+            <td class="px-4 py-3">${sub.student_name ?? "-"}</td>
+            <td class="px-4 py-3">${sub.submitted_at ?? "-"}</td>
+            <td class="px-4 py-3">
+                ${(() => {
+                    if (!sub.points) return "-";
+
+                    // sum all numeric points inside sub.points
+                    let total = 0;
+                    Object.values(sub.points).forEach(v => {
+                        if (typeof v === "number") total += v;
+                    });
+
+                    return total + " pts";
+                })()}
+            </td>
+
+            <td class="px-4 py-3">
+              ${sub.result_status === "Passed"
+                ? `<span class="text-green-600 font-semibold">Passed</span>`
+                : `<span class="text-red-600 font-semibold">Failed</span>`}
+            </td>
+            ${fields.map(f => `<td class="px-4 py-3 text-center">${icon(f, correctness[f])}</td>`).join("")}
+            <td class="px-4 py-3 flex items-center space-x-2">
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-[#093704] h-2.5 rounded-full" style="width: ${percentage}%;"></div>
+              </div>
+              <span class="text-xs text-gray-600">${percentage}%</span>
+            </td>
+          </tr>
+        `;
+        tableBody.insertAdjacentHTML("beforeend", row);
+      });
+    })
+    .catch(err => {
+      console.error("Fetch error:", err);
+      tableBody.innerHTML = `<tr><td colspan="16" class="text-center text-red-500 py-6">Error loading data.</td></tr>`;
+    });
+});
+
+// 🟣 Show Field Answer Modal
+function showFieldAnswer(submission, field) {
+  const modalTitle = document.getElementById("modalTitle");
+  const modalContent = document.getElementById("modalContent");
+
+  // PASSENGER: detailed multi-passenger view
+  if (field === "passenger") {
+    // student answers array and correct answers array
+    const studentPassengers = submission.answers?.passengers || [];
+    const correctPassengers = submission.correct_answers?.passengers || [];
+    const passengerCorrectnessArr = submission.correctness?.passenger || [];
+    const passengerPointsArr = submission.points?.passenger_details || [];
+    const passengerTotal = submission.points?.passenger_total ?? null;
+    const passengerSummary = submission.correctness?.passenger_summary ?? null;
+
+    modalTitle.textContent = `Passenger Details - ${submission.student_name ?? ""}`;
+
+    if ((!studentPassengers || studentPassengers.length === 0) && (!correctPassengers || correctPassengers.length === 0)) {
+      modalContent.innerHTML = `<p class="text-center text-gray-500 py-4">No passenger data found.</p>`;
+      openModal();
+      return;
+    }
+
+    // fields to show per passenger
+    const subfields = [
+      { key: "first_name", label: "First Name" },
+      { key: "middle_name", label: "Middle Name" },
+      { key: "last_name", label: "Last Name" },
+      { key: "gender", label: "Gender" },
+      { key: "date_of_birth", label: "Date of Birth" },
+      { key: "nationality", label: "Nationality" },
+    ];
+
+    // build sections for each passenger index (use max length of student/correct)
+    const maxLen = Math.max(studentPassengers.length, correctPassengers.length, passengerCorrectnessArr.length, passengerPointsArr.length, 1);
+
+    const passengerSections = [];
+    for (let idx = 0; idx < maxLen; idx++) {
+      const stud = studentPassengers[idx] || {};
+      const corr = correctPassengers[idx] || {};
+      const corStat = passengerCorrectnessArr[idx] || {};
+      const pts = passengerPointsArr[idx] || {};
+      // compute total points for this passenger if available
+      const totalPtsForThis = Object.values(pts).reduce((acc, v) => acc + (typeof v === "number" ? v : 0), 0);
+
+      const rows = subfields.map(sf => {
+        const studentValRaw = stud[sf.key];
+        const correctValRaw = corr[sf.key];
+
+        const studentVal = (studentValRaw === null || typeof studentValRaw === "undefined" || studentValRaw === "") ? "-" : String(studentValRaw);
+        const correctVal = (correctValRaw === null || typeof correctValRaw === "undefined" || correctValRaw === "") ? "-" : String(correctValRaw);
+
+        // normalize for comparison if both strings
+        let isCorrect = false;
+        if (typeof studentValRaw === "string" && typeof correctValRaw === "string") {
+          isCorrect = studentValRaw.trim().toLowerCase() === correctValRaw.trim().toLowerCase();
+        } else {
+          // fallback to strict equality
+          isCorrect = studentValRaw == correctValRaw;
+        }
+
+        // points key e.g. "first_name_points"
+        const ptsKey = `${sf.key}_points`;
+        const fieldPts = (typeof pts[ptsKey] === "number") ? pts[ptsKey] : 0;
+
+        return `
+          <tr class="border-b">
+            <td class="px-4 py-2 bg-gray-50 font-medium">${sf.label}</td>
+            <td class="px-4 py-2 break-words">${studentVal}</td>
+            <td class="px-4 py-2 break-words">${correctVal}</td>
+            <td class="px-4 py-2 text-center ${isCorrect ? "text-green-600" : "text-red-600"}">
+              ${isCorrect ? "✔️" : "❌"}
+            </td>
+            <td class="px-4 py-2 text-center text-xs text-gray-600">${fieldPts} pts</td>
+          </tr>
+        `;
+      }).join("");
+
+      passengerSections.push(`
+        <div class="border rounded-lg overflow-hidden shadow-sm">
+          <button
+            class="w-full text-left px-4 py-3 bg-[#093704] text-[#FFC83D] font-semibold flex justify-between items-center"
+            onclick="togglePassengerAccordion('passenger-${idx}')"
+          >
+            <span>Passenger ${idx + 1} - ${corr.first_name ?? stud.first_name ?? ''} ${corr.last_name ?? stud.last_name ?? ''}</span>
+            <span id="arrow-passenger-${idx}" class="transition-transform duration-200">▼</span>
+          </button>
+
+          <div id="passenger-${idx}" class="hidden bg-white p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <div class="text-sm text-gray-600">Total: <span class="font-medium">${totalPtsForThis} pts</span></div>
+              <div class="text-sm text-gray-600">Status: <span class="${(passengerCorrectnessArr[idx] && Object.values(passengerCorrectnessArr[idx]).every(v => v === 'Correct')) ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}">
+                ${(passengerCorrectnessArr[idx] && Object.values(passengerCorrectnessArr[idx]).every(v => v === 'Correct')) ? 'Correct' : 'Wrong'}
+              </span></div>
+            </div>
+
+            <table class="w-full text-sm border rounded-md overflow-hidden">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-4 py-2 text-left">Field</th>
+                  <th class="px-4 py-2 text-left">Student Answer</th>
+                  <th class="px-4 py-2 text-left">Correct Answer</th>
+                  <th class="px-4 py-2 text-center">Result</th>
+                  <th class="px-4 py-2 text-center">Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `);
+    }
+
+    // summary header (overall passenger_total and passengerSummary)
+    const passengerSummaryHtml = `
+      <div class="mb-4 flex items-center justify-between gap-4">
+        <div>
+          <div class="text-sm text-gray-500">Passenger Total Points</div>
+          <div class="text-xl font-semibold">${passengerTotal ?? 0} pts</div>
+        </div>
+        <div>
+          <div class="text-sm text-gray-500">Passenger Summary</div>
+          <div class="${passengerSummary === 'Correct' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'} text-lg">
+            ${passengerSummary ?? 'N/A'}
+          </div>
+        </div>
+      </div>
+    `;
+
+    modalContent.innerHTML = `
+      ${passengerSummaryHtml}
+      <div class="space-y-4">
+        ${passengerSections.join("")}
+      </div>
+    `;
+    openModal();
+    return;
+  }
+
+  // NON-PASSENGER fields
+  const correct = submission.correct_answers?.[field] ?? "-";
+  const student = submission.answers?.[field] ?? "-";
+  // backend has correctness values like "Correct"/"Wrong"
+  const isCorrect = submission.correctness?.[field] === "Correct";
+  // points may be number (10 etc.)
+  const points = typeof submission.points?.[field] === "number" ? submission.points[field] : 0;
+
+  modalTitle.textContent = `${field.replace("_", " ").toUpperCase()} - ${submission.student_name ?? ""}`;
+  modalContent.innerHTML = `
+    <div class="space-y-4">
+      <div class="flex items-center justify-center gap-2">
+        <span class="${isCorrect ? "text-green-600" : "text-red-600"} text-4xl">
+          ${isCorrect ? "✔️" : "❌"}
+        </span>
+        <span class="text-lg font-medium ${isCorrect ? "text-green-700" : "text-red-700"}">
+          ${isCorrect ? "Correct" : "Wrong"} (${points} pts)
+        </span>
+      </div>
+      <table class="w-full text-sm border rounded-md overflow-hidden">
+        <tbody>
+          <tr class="border-b">
+            <td class="px-4 py-2 font-semibold bg-gray-50 w-1/3">Student Answer:</td>
+            <td class="px-4 py-2">${student}</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-2 font-semibold bg-gray-50">Correct Answer:</td>
+            <td class="px-4 py-2">${correct}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+  openModal();
+}
+
+// 🟣 Accordion toggle for passenger panels
+function togglePassengerAccordion(id) {
+  const section = document.getElementById(id);
+  const arrow = document.getElementById(`arrow-${id}`);
+  const isHidden = section.classList.contains("hidden");
+  // close all passenger sections
+  document.querySelectorAll("[id^='passenger-']").forEach(el => el.classList.add("hidden"));
+  document.querySelectorAll("[id^='arrow-passenger-']").forEach(a => a.style.transform = "rotate(0deg)");
+  if (isHidden) {
+    section.classList.remove("hidden");
+    if (arrow) arrow.style.transform = "rotate(180deg)";
+  }
+}
+
+// 🟩 Modal Animations
+function openModal() {
+  const modal = document.getElementById("answerModal");
+  const content = document.getElementById("answerModalContent");
+  modal.classList.remove("hidden");
+
+  // Small delay for transition
+  setTimeout(() => {
+    content.classList.remove("scale-95", "opacity-0", "translate-y-8");
+    content.classList.add("scale-100", "opacity-100", "translate-y-0");
+  }, 10);
+
+  document.body.classList.add("overflow-hidden");
+}
+
+function closeModal() {
+  const modal = document.getElementById("answerModal");
+  const content = document.getElementById("answerModalContent");
+
+  content.classList.add("scale-95", "opacity-0", "translate-y-8");
+  document.body.classList.remove("overflow-hidden");
+
+  setTimeout(() => modal.classList.add("hidden"), 300);
+}
+</script>
+
+<style>
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #999;
+  }
+
+  /* Mobile animation tweak */
+  @media (max-width: 640px) {
+    #answerModalContent {
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 100%;
+      margin: auto;
+      height: auto;
+    }
+  }
+</style>
+{% endblock %}

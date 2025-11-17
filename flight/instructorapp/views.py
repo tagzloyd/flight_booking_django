@@ -6,6 +6,8 @@ from django.db import models
 from decimal import Decimal
 from .models import Section, Activity, ActivitySubmission, SectionEnrollment, ActivityPassenger, ActivityAddOn
 from flightapp.models import User, Student  # Add these imports
+from django.db import models, connection
+from collections import defaultdict
 
 
 # Helper function for session-based authentication
@@ -879,3 +881,306 @@ def debug_session(request):
         print(f"ID: {instructor.id}, Username: {instructor.username}")
     
     return HttpResponse("Check console for debug output")
+
+    
+def index(request, activity_id):
+    """View to display student work comparison"""
+    activity = get_object_or_404(Activity, id=activity_id)
+    
+    # Get airports for the template if needed
+    from flightapp.models import Airport
+    airports = Airport.objects.all()
+    
+    context = {
+        'activity': activity,
+        'airports': airports,
+        'activity_id': activity.id,  # ✅ Add this line
+    }
+    
+    return render(request, 'instructorapp/instructor/submission/index.html', context)
+
+def activity_submissions_api(request, activity_id=None):
+    """
+    Returns submissions with multi-passenger support.
+    Matching algorithm: For each student passenger, find the best-matching
+    correct passenger (by comparing fields). Matching is order-independent.
+    """
+
+    # ============================================================
+    # 1. MAIN QUERY — NO passenger join to avoid duplicates
+    # ============================================================
+    query = """
+        SELECT 
+            s.id AS submission_id,
+            s.activity_id AS activity_id,
+            st.id AS student_school_id,
+            st.last_name AS student_name,
+            st.student_number AS student_number,
+            s.submitted_at,
+            s.score,
+            s.feedback,
+            s.status AS submission_status,
+
+            a.title AS activity_title,
+            a.total_points AS activity_total_points,
+
+            s.required_trip_type AS student_trip_type,
+            a.required_trip_type AS correct_trip_type,
+
+            s.required_travel_class AS student_travel_class,
+            a.required_travel_class AS correct_travel_class,
+
+            sa.code AS student_origin,
+            a.required_origin AS correct_origin,
+
+            da.code AS student_destination,
+            a.required_destination AS correct_destination,
+
+            s.required_passengers AS student_adults,
+            a.required_passengers AS correct_adults,
+
+            s.required_children AS student_children,
+            a.required_children AS correct_children,
+
+            s.required_infants AS student_infants,
+            a.required_infants AS correct_infants,
+
+            s.required_max_price AS student_max_price,
+            a.required_max_price AS correct_max_price
+
+        FROM instructorapp_activitysubmission s
+        JOIN instructorapp_activity a ON s.activity_id = a.id
+        JOIN flightapp_student st ON s.student_id = st.id
+        LEFT JOIN flightapp_airport sa ON sa.id = s.required_origin_airport_id
+        LEFT JOIN flightapp_airport da ON da.id = s.required_destination_airport_id
+    """
+
+    params = []
+    if activity_id:
+        query += " WHERE s.activity_id = %s"
+        params.append(activity_id)
+
+    with connection.cursor() as cursor:
+        cursor.execute(query, params)
+        columns = [col[0] for col in cursor.description]
+        rows = cursor.fetchall()
+
+    # ============================================================
+    # 2. GET CORRECT PASSENGERS PER ACTIVITY
+    # ============================================================
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                activity_id,
+                first_name, middle_name, last_name,
+                gender, date_of_birth, nationality
+            FROM instructorapp_activitypassenger
+            ORDER BY activity_id, id
+        """)
+        correct_rows = cursor.fetchall()
+        correct_cols = [col[0] for col in cursor.description]
+
+    correct_passenger_map = defaultdict(list)
+    for p in correct_rows:
+        # p[0] is activity_id
+        correct_passenger_map[p[0]].append(dict(zip(correct_cols, p)))
+
+    # ============================================================
+    # 3. GET STUDENT PASSENGERS PER SUBMISSION
+    # ============================================================
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+                activity_submission_id,
+                first_name, middle_name, last_name,
+                gender, date_of_birth, nationality
+            FROM instructorapp_activitysubmission_passenger
+            ORDER BY activity_submission_id, id
+        """)
+        student_pax_rows = cursor.fetchall()
+        student_pax_cols = [col[0] for col in cursor.description]
+
+    student_passenger_map = defaultdict(list)
+    for p in student_pax_rows:
+        sid = p[0]
+        student_passenger_map[sid].append(dict(zip(student_pax_cols, p)))
+
+    # ============================================================
+    # 4. BUILD JSON RESPONSE
+    # ============================================================
+    data = []
+    # We'll give each passenger detail equal weight. 6 fields -> total passenger points ≈ 10.
+    FIELD_POINTS = 10.0 / 6.0  # ~1.6666667 per-field
+
+    # helper to normalize values for comparison
+    def norm(v):
+        if v is None:
+            return ""
+        # dates may come as date objects; convert to iso string
+        return str(v).strip().lower()
+
+    for row in rows:
+        r = dict(zip(columns, row))
+        sid = r["submission_id"]
+        this_activity_id = r["activity_id"]
+
+        correct_passengers_orig = correct_passenger_map.get(this_activity_id, [])
+        # we will not mutate original map; make a list of indices for matching
+        correct_indices_available = list(range(len(correct_passengers_orig)))
+
+        # copy correct_passengers for easy lookup
+        correct_passengers = correct_passengers_orig[:]  # shallow copy
+
+        student_passengers = student_passenger_map.get(sid, [])
+
+        passenger_correctness = []
+        passenger_points = []
+        passenger_total = 0.0
+
+        # For each student passenger, find the best matching correct passenger (by max field matches)
+        for sp in student_passengers:
+            # compute normalized values for student
+            best_idx = None
+            best_matches = -1
+
+            for j in correct_indices_available:
+                cp = correct_passengers[j]
+                # count matching fields (case-insensitive, trimmed)
+                matches = 0
+                for field in ("first_name", "middle_name", "last_name", "gender", "date_of_birth", "nationality"):
+                    if norm(sp.get(field)) != "" and norm(sp.get(field)) == norm(cp.get(field)):
+                        matches += 1
+                # prefer a candidate with more matches
+                if matches > best_matches:
+                    best_matches = matches
+                    best_idx = j
+
+            # take the matched correct passenger if it has at least 1 match; else empty dict
+            matched_cp = {}
+            if best_idx is not None and best_matches > 0:
+                matched_cp = correct_passengers[best_idx]
+                # remove index from available list so it's not matched again
+                correct_indices_available.remove(best_idx)
+
+            # now compute per-field correctness and points vs matched_cp
+            correctness = {}
+            points = {}
+            for field in ("first_name", "middle_name", "last_name", "gender", "date_of_birth", "nationality"):
+                is_correct = norm(sp.get(field)) == norm(matched_cp.get(field))
+                correctness[field] = "Correct" if is_correct else "Wrong"
+                points[f"{field}_points"] = FIELD_POINTS if is_correct else 0.0
+
+            passenger_correctness.append(correctness)
+            passenger_points.append(points)
+            passenger_total += sum(points.values())
+
+        # ============================================================
+        # 5. CALCULATE FINAL SCORE (sum of all field points)
+        # ============================================================
+        base_points = (
+            (10 if r["student_trip_type"] == r["correct_trip_type"] else 0) +
+            (10 if r["student_travel_class"] == r["correct_travel_class"] else 0) +
+            (10 if r["student_origin"] == r["correct_origin"] else 0) +
+            (10 if r["student_destination"] == r["correct_destination"] else 0) +
+            (10 if r["student_adults"] == r["correct_adults"] else 0) +
+            (10 if r["student_children"] == r["correct_children"] else 0) +
+            (10 if r["student_infants"] == r["correct_infants"] else 0) +
+            (10 if r["student_max_price"] == r["correct_max_price"] else 0)
+        )
+
+        final_score = base_points + passenger_total
+
+        # ============================================================
+        # 6. SAVE FINAL SCORE TO DATABASE
+        # ============================================================
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE instructorapp_activitysubmission SET score = %s WHERE id = %s",
+                [final_score, sid]
+            )
+
+        # also overwrite score in the response
+        r["score"] = final_score    
+
+        # If there are correct_passengers that were not matched at all (student provided fewer),
+        # we may want to show them in correct_answers (we already include correct_passengers below).
+        expected_total = len(correct_passengers_orig) * (FIELD_POINTS * 6)
+
+        # compute result_status: try to determine Passed/Failed via score vs activity total (70% threshold).
+        result_status = None
+        try:
+            if r.get("score") is not None and r.get("activity_total_points") is not None:
+                pct = float(r["score"]) / float(r["activity_total_points"]) if float(r["activity_total_points"]) != 0 else 0
+                result_status = "Passed" if pct >= 0.7 else "Failed"
+        except Exception:
+            result_status = None
+        if result_status is None:
+            # fallback to submission_status or N/A
+            result_status = r.get("submission_status") or "N/A"
+
+        data.append({
+            "submission_id": sid,
+            "student_id": r["student_school_id"],
+            "student_name": r["student_name"],
+            "student_number": r["student_number"],
+            "submitted_at": r["submitted_at"],
+            "score": r["score"],
+            "feedback": r["feedback"],
+            "submission_status": r["submission_status"],
+            "result_status": result_status,
+            "activity_title": r["activity_title"],
+
+            "answers": {
+                "trip_type": r["student_trip_type"],
+                "travel_class": r["student_travel_class"],
+                "origin": r["student_origin"],
+                "destination": r["student_destination"],
+                "adults": r["student_adults"],
+                "children": r["student_children"],
+                "infants": r["student_infants"],
+                "max_price": r["student_max_price"],
+                "passengers": student_passengers,
+            },
+
+            "correct_answers": {
+                "trip_type": r["correct_trip_type"],
+                "travel_class": r["correct_travel_class"],
+                "origin": r["correct_origin"],
+                "destination": r["correct_destination"],
+                "adults": r["correct_adults"],
+                "children": r["correct_children"],
+                "infants": r["correct_infants"],
+                "max_price": r["correct_max_price"],
+                "passengers": correct_passengers_orig,
+            },
+
+            "points": {
+                "trip_type": 10 if r["student_trip_type"] == r["correct_trip_type"] else 0,
+                "travel_class": 10 if r["student_travel_class"] == r["correct_travel_class"] else 0,
+                "origin": 10 if r["student_origin"] == r["correct_origin"] else 0,
+                "destination": 10 if r["student_destination"] == r["correct_destination"] else 0,
+                "adults": 10 if r["student_adults"] == r["correct_adults"] else 0,
+                "children": 10 if r["student_children"] == r["correct_children"] else 0,
+                "infants": 10 if r["student_infants"] == r["correct_infants"] else 0,
+                "max_price": 10 if r["student_max_price"] == r["correct_max_price"] else 0,
+
+                "passenger_details": passenger_points,
+                "passenger_total": passenger_total,
+            },
+
+            "correctness": {
+                "trip_type": "Correct" if r["student_trip_type"] == r["correct_trip_type"] else "Wrong",
+                "travel_class": "Correct" if r["student_travel_class"] == r["correct_travel_class"] else "Wrong",
+                "origin": "Correct" if r["student_origin"] == r["correct_origin"] else "Wrong",
+                "destination": "Correct" if r["student_destination"] == r["correct_destination"] else "Wrong",
+                "adults": "Correct" if r["student_adults"] == r["correct_adults"] else "Wrong",
+                "children": "Correct" if r["student_children"] == r["correct_children"] else "Wrong",
+                "infants": "Correct" if r["student_infants"] == r["correct_infants"] else "Wrong",
+                "max_price": "Correct" if r["student_max_price"] == r["correct_max_price"] else "Wrong",
+
+                "passenger": passenger_correctness,
+                "passenger_summary": "Correct" if abs(passenger_total - expected_total) < 0.0001 else "Wrong",
+            },
+        })
+
+    return JsonResponse(data, safe=False)

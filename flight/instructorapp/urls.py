@@ -29,5 +29,8 @@ urlpatterns = [
     path('debug-session/', views.debug_session, name='debug_session'),
 
 
+    # Student work view
+    path('activity/<int:activity_id>/student-work/', views.index, name='index'),
+    path('api/activity/<int:activity_id>/submissions/', views.activity_submissions_api, name='activity_submissions_api'),
 
 ]

@@ -1,0 +1,76 @@
+{% extends 'instructorapp/base.html' %}
+{% block title %}Student Work Submission{% endblock %}
+{% load static %}
+{% block content %}
+<div class="flex flex-1 flex-col">
+    <!-- Back Navigation -->
+    <div class="flex mb-2">
+        <a href="{% url 'section_detail' activity.section.id %}" class="ml-5 flex text-xl items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="#045946" viewBox="0 0 24 24">
+                <path d="M14.29 6.29 8.59 12l5.7 5.71 1.42-1.42-4.3-4.29 4.3-4.29z"></path>
+            </svg> 
+            Back to Section
+        </a>
+    </div>
+
+    <div class="w-full border-b border-gray-300"></div>
+
+    <!-- Top Nav Tabs -->
+    <div class="flex flex-col mt-10 px-30 space-y-10">
+        <div class="flex gap-10 text-xs font-medium">
+            <a href="{% url 'activity_detail' activity.section.id %}" class="text-gray-600 hover:text-[#045946]">Instruction/s</a>
+            <a href="{% url 'index' activity.id %}" class="text-[#045946] border-b-2 border-[#045946] pb-1">Student work</a>
+        </div>
+
+        <!-- Activity Header Section -->
+        <div class="flex justify-between items-center">
+            <div class="flex gap-6 items-center">
+                <div class="w-10 h-10 rounded-full bg-[#045946] flex items-center justify-center">
+                    <span class="text-white text-xs font-semibold">
+                        {{ activity.activity_type|slice:":1"|upper }}
+                    </span>
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-xl font-semibold">{{ activity.title }}</h1>
+                    <p class="text-xs text-gray-400 leading-none">{{ activity.section.section_code }} - {{ activity.section.section_name }}</p>
+                    <p class="text-xs text-gray-400">Due: {{ activity.due_date|date:"M j, Y" }}</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                {% if activity.is_code_active %}
+                <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">
+                    Active Code: {{ activity.activity_code }}
+                </div>
+                {% else %}
+                <div class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold">
+                    Draft
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="w-full border border-gray-300"></div>
+
+
+        <!-- Student Submissions Table/List -->
+
+        {% include 'instructorapp/instructor/submission/table.html' %}
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-8">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                </svg>
+                <span class="text-sm font-semibold text-blue-800">All student submissions will appear below once submitted.</span>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+{% endblock %}

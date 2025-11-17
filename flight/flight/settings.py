@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env
-load_dotenv(os.path.join(BASE_DIR, ".env"))
+load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = 'django-insecure-8(a&-6(gfeawm71656957j)lozs(sc+l*1%6+i9g*3)ltu=18-)'
 PAYMONGO_PUBLIC_KEY = os.getenv("PAYMONGO_PUBLIC_KEY")
 PAYMONGO_SECRET_KEY = os.getenv("PAYMONGO_SECRET_KEY")
 
@@ -65,15 +65,17 @@ TEMPLATES = [
     },
 ]
 
+ 
+
 WSGI_APPLICATION = "flight.wsgi.application"
 
 # Database
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "flightdb",
+        "NAME": "flight4",
         "USER": "postgres",
-        "PASSWORD": "postgres",
+        "PASSWORD": "Tagaro-26",
         "HOST": "localhost",
         "PORT": "5432",
     }

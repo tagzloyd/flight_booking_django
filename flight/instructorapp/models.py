@@ -246,6 +246,8 @@ class ActivityPassenger(models.Model):
         if self.is_primary:
             return "Adult (Primary)"
         return "Adult"
+   
+
 
 class ActivitySubmission(models.Model):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='submissions')
@@ -392,6 +394,27 @@ class ActivitySubmission(models.Model):
         if self.submitted_at and self.activity.due_date and self.submitted_at > self.activity.due_date:
             self.status = 'late'
         super().save(*args, **kwargs)
+
+class ActivitySubmissionPassenger(models.Model):
+    activity_submission = models.ForeignKey(
+        ActivitySubmission,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='activity_submission_passengers'
+    )
+    first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    last_name = models.CharField(max_length=100)
+    gender = models.CharField(max_length=10, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    nationality = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        db_table = 'instructorapp_activitysubmission_passenger'
+
+    def __str__(self):
+        return f"{self.last_name}, {self.first_name}"
 
 # UPDATED MODEL: StudentSelectedAddOn without BookingAddOn reference
 class StudentSelectedAddOn(models.Model):
