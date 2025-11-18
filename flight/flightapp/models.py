@@ -187,6 +187,14 @@ class PassengerInfo(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     passport_number = models.CharField(max_length=50, blank=True, null=True)
+    nationality = models.CharField(max_length=100, blank=True, null=True)
+    activity_submission = models.ForeignKey(
+        "instructorapp.ActivitySubmission",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='passengerinfos'
+    )
 
     passenger_type = models.CharField(
         max_length=10, choices=TYPE_CHOICES, default="Adult"

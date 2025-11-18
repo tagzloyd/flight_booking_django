@@ -11,7 +11,7 @@
           <th rowspan="2" class="px-4 py-3">Student ID</th>
           <th rowspan="2" class="px-4 py-3">Name</th>
           <th rowspan="2" class="px-4 py-3">Submitted At</th>
-          <th rowspan="2" class="px-4 py-3">Final Score</th>
+          <!-- <th rowspan="2" class="px-4 py-3">Final Score</th> -->
           <th rowspan="2" class="px-4 py-3">Result</th>
           <th colspan="9" class="px-4 py-3 text-center bg-gray-200 text-[#093704]">
             Flight & Passenger Requirements
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td class="px-4 py-3">${sub.student_number ?? "-"}</td>
             <td class="px-4 py-3">${sub.student_name ?? "-"}</td>
             <td class="px-4 py-3">${sub.submitted_at ?? "-"}</td>
-            <td class="px-4 py-3">
+            <!--<td class="px-4 py-3">
                 ${(() => {
                     if (!sub.points) return "-";
 
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     return total + " pts";
                 })()}
-            </td>
+            </td>-->
 
             <td class="px-4 py-3">
               ${sub.result_status === "Passed"
@@ -232,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // --------------------------------------------
         const totalsRow = `
         <tr class="border-t-4 border-[#093704] bg-white">
-          <td colspan="5" class="px-4 py-4 text-right font-semibold text-[#093704] text-sm">
+          <td colspan="4" class="px-4 py-4 text-right font-semibold text-[#093704] text-sm">
             Overall Field Performance Summary
           </td>
 

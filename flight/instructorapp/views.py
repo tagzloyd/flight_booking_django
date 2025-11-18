@@ -898,14 +898,20 @@ def index(request, activity_id):
     }
     
     return render(request, 'instructorapp/instructor/submission/index.html', context)
-
 def activity_submissions_api(request, activity_id=None):
     """
     Returns submissions with multi-passenger support.
-    Matching algorithm: For each student passenger, find the best-matching
-    correct passenger (by comparing fields). Matching is order-independent.
-    """
+    Student passengers are read from flightapp_passengerinfo (activity_submission_id),
+    addon data comes from instructorapp_activityaddon and is matched by passenger_id
+    (which references flightapp_passengerinfo.id).
 
+    New per-passenger fields:
+      - addon_score
+      - max_addon_points
+      - addon_feedback
+
+    Addon scoring: quantity_per_passenger * points_value
+    """
     # ============================================================
     # 1. MAIN QUERY — NO passenger join to avoid duplicates
     # ============================================================
@@ -966,7 +972,8 @@ def activity_submissions_api(request, activity_id=None):
         rows = cursor.fetchall()
 
     # ============================================================
-    # 2. GET CORRECT PASSENGERS PER ACTIVITY
+    # 2. GET CORRECT PASSENGERS PER ACTIVITY (template)
+    #    (unchanged: instructorapp_activitypassenger defines correct answers)
     # ============================================================
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -987,36 +994,80 @@ def activity_submissions_api(request, activity_id=None):
 
     # ============================================================
     # 3. GET STUDENT PASSENGERS PER SUBMISSION
+    #    FROM flightapp_passengerinfo (activity_submission_id)
     # ============================================================
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT
                 activity_submission_id,
+                id AS passengerinfo_id,
                 first_name, middle_name, last_name,
                 gender, date_of_birth, nationality
-            FROM instructorapp_activitysubmission_passenger
+            FROM flightapp_passengerinfo
             ORDER BY activity_submission_id, id
         """)
         student_pax_rows = cursor.fetchall()
         student_pax_cols = [col[0] for col in cursor.description]
 
     student_passenger_map = defaultdict(list)
+    # Also keep a flat set of passengerinfo ids to later fetch addons efficiently
+    passengerinfo_ids_by_activity = defaultdict(list)  # activity_submission_id -> list(passengerinfo_id)
     for p in student_pax_rows:
-        sid = p[0]
-        student_passenger_map[sid].append(dict(zip(student_pax_cols, p)))
+        d = dict(zip(student_pax_cols, p))
+        sid = d["activity_submission_id"]
+        student_passenger_map[sid].append(d)
+        passengerinfo_ids_by_activity[sid].append(d["passengerinfo_id"])
 
     # ============================================================
-    # 4. BUILD JSON RESPONSE
+    # 4. GET ADDONS FOR ACTIVITIES (we'll fetch all addons for the activity ids we have)
+    #    instructorapp_activityaddon columns: activity_id, passenger_id, quantity_per_passenger, points_value, notes, is_required, addon_id
+    # ============================================================
+    # collect unique activity ids present in rows
+    activity_ids = sorted({r[columns.index("activity_id")] for r in rows}) if rows else []
+
+    addons_map_by_activity = defaultdict(list)    # activity_id -> list(addon_rows)
+    addons_map_by_passengerinfo = defaultdict(list)  # passengerinfo_id -> list(addon dict)
+
+    if activity_ids:
+        # fetch addons for these activities
+        placeholders = ",".join(["%s"] * len(activity_ids))
+        sql = f"""
+            SELECT
+                activity_id,
+                passenger_id,
+                quantity_per_passenger,
+                points_value,
+                notes,
+                is_required,
+                addon_id,
+                id AS activityaddon_id
+            FROM instructorapp_activityaddon
+            WHERE activity_id IN ({placeholders})
+            ORDER BY activity_id, id
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(sql, activity_ids)
+            addon_rows = cursor.fetchall()
+            addon_cols = [col[0] for col in cursor.description]
+
+        for a in addon_rows:
+            ad = dict(zip(addon_cols, a))
+            addons_map_by_activity[ad["activity_id"]].append(ad)
+            # passenger_id references flightapp_passengerinfo.id per your instruction
+            pid = ad.get("passenger_id")
+            if pid is not None:
+                addons_map_by_passengerinfo[pid].append(ad)
+
+    # ============================================================
+    # 5. BUILD JSON RESPONSE
     # ============================================================
     data = []
     # We'll give each passenger detail equal weight. 6 fields -> total passenger points ≈ 10.
     FIELD_POINTS = 10.0 / 6.0  # ~1.6666667 per-field
 
-    # helper to normalize values for comparison
     def norm(v):
         if v is None:
             return ""
-        # dates may come as date objects; convert to iso string
         return str(v).strip().lower()
 
     for row in rows:
@@ -1025,12 +1076,10 @@ def activity_submissions_api(request, activity_id=None):
         this_activity_id = r["activity_id"]
 
         correct_passengers_orig = correct_passenger_map.get(this_activity_id, [])
-        # we will not mutate original map; make a list of indices for matching
         correct_indices_available = list(range(len(correct_passengers_orig)))
+        correct_passengers = correct_passengers_orig[:]  # copy
 
-        # copy correct_passengers for easy lookup
-        correct_passengers = correct_passengers_orig[:]  # shallow copy
-
+        # student passengers for this submission (from flightapp_passengerinfo)
         student_passengers = student_passenger_map.get(sid, [])
 
         passenger_correctness = []
@@ -1045,37 +1094,91 @@ def activity_submissions_api(request, activity_id=None):
 
             for j in correct_indices_available:
                 cp = correct_passengers[j]
-                # count matching fields (case-insensitive, trimmed)
                 matches = 0
                 for field in ("first_name", "middle_name", "last_name", "gender", "date_of_birth", "nationality"):
                     if norm(sp.get(field)) != "" and norm(sp.get(field)) == norm(cp.get(field)):
                         matches += 1
-                # prefer a candidate with more matches
                 if matches > best_matches:
                     best_matches = matches
                     best_idx = j
 
-            # take the matched correct passenger if it has at least 1 match; else empty dict
             matched_cp = {}
             if best_idx is not None and best_matches > 0:
                 matched_cp = correct_passengers[best_idx]
-                # remove index from available list so it's not matched again
                 correct_indices_available.remove(best_idx)
 
-            # now compute per-field correctness and points vs matched_cp
             correctness = {}
             points = {}
+            # per-field correctness & points
             for field in ("first_name", "middle_name", "last_name", "gender", "date_of_birth", "nationality"):
                 is_correct = norm(sp.get(field)) == norm(matched_cp.get(field))
                 correctness[field] = "Correct" if is_correct else "Wrong"
                 points[f"{field}_points"] = FIELD_POINTS if is_correct else 0.0
 
+            # -------------------
+            # ADDON handling for this passenger
+            # -------------------
+            passengerinfo_id = sp.get("passengerinfo_id")
+            addon_rows_for_pax = addons_map_by_passengerinfo.get(passengerinfo_id, [])
+
+            addon_details = []
+            addon_score = 0.0
+            max_addon_points = 0.0
+            addon_feedback_items = []
+
+            for ad in addon_rows_for_pax:
+                # compute addon totals using the rule you provided
+                qty = ad.get("quantity_per_passenger") or 0
+                pts = ad.get("points_value") or 0
+                notes = ad.get("notes") or ""
+                # total for this addon entry
+                this_addon_total = (float(qty) * float(pts))
+                addon_details.append({
+                    "activityaddon_id": ad.get("activityaddon_id"),
+                    "addon_id": ad.get("addon_id"),
+                    "is_required": ad.get("is_required"),
+                    "quantity_per_passenger": qty,
+                    "points_value": pts,
+                    "notes": notes,
+                    "addon_total": this_addon_total,
+                })
+                addon_score += this_addon_total
+                max_addon_points += this_addon_total  # as per your selection, treat this as the max possible for this addon
+                if notes:
+                    addon_feedback_items.append(str(notes))
+
+            # aggregate feedback string (if multiple addons present)
+            addon_feedback = "; ".join(addon_feedback_items) if addon_feedback_items else None
+
+            # include addon fields in points and correctness objects
+            points["addon_score"] = addon_score
+            points["max_addon_points"] = max_addon_points
+            correctness["addon_feedback"] = addon_feedback or ""
+
             passenger_correctness.append(correctness)
             passenger_points.append(points)
-            passenger_total += sum(points.values())
+
+            # sum per-field points plus addon points into passenger_total
+            passenger_field_sum = sum(v for k, v in points.items() if k.endswith("_points"))
+            passenger_total += passenger_field_sum + addon_score
+
+            # attach addon computed values to the student passenger dict (so answers.passengers contains them)
+            # we copy sp to avoid mutating original mapping rows unexpectedly
+            sp_copy = sp.copy()
+            sp_copy["addon_score"] = addon_score
+            sp_copy["max_addon_points"] = max_addon_points
+            sp_copy["addon_feedback"] = addon_feedback
+            sp_copy["addon_details"] = addon_details
+
+            # replace the passenger entry in the student_passengers list with the augmented copy
+            # (find index)
+            for i, orig_p in enumerate(student_passengers):
+                if orig_p.get("passengerinfo_id") == passengerinfo_id:
+                    student_passengers[i] = sp_copy
+                    break
 
         # ============================================================
-        # 5. CALCULATE FINAL SCORE (sum of all field points)
+        # 5. CALCULATE FINAL SCORE (sum of all field points + addon points)
         # ============================================================
         base_points = (
             (10 if r["student_trip_type"] == r["correct_trip_type"] else 0) +
@@ -1100,13 +1203,22 @@ def activity_submissions_api(request, activity_id=None):
             )
 
         # also overwrite score in the response
-        r["score"] = final_score    
+        r["score"] = final_score
 
-        # If there are correct_passengers that were not matched at all (student provided fewer),
-        # we may want to show them in correct_answers (we already include correct_passengers below).
-        expected_total = len(correct_passengers_orig) * (FIELD_POINTS * 6)
+        # expected_total: previous expected passenger fields + addons for this submission
+        expected_passenger_fields_total = len(correct_passengers_orig) * (FIELD_POINTS * 6)
+        # compute expected addon total for this activity & submission: sum of max addon points for passengers present
+        expected_addon_total = 0.0
+        # sum addons for the student passengerinfos present in this submission (we used passengerinfo ids earlier)
+        for pid in passengerinfo_ids_by_activity.get(sid, []):
+            for ad in addons_map_by_passengerinfo.get(pid, []):
+                qty = ad.get("quantity_per_passenger") or 0
+                pts = ad.get("points_value") or 0
+                expected_addon_total += float(qty) * float(pts)
 
-        # compute result_status: try to determine Passed/Failed via score vs activity total (70% threshold).
+        expected_total = expected_passenger_fields_total + expected_addon_total
+
+        # result_status
         result_status = None
         try:
             if r.get("score") is not None and r.get("activity_total_points") is not None:
@@ -1115,7 +1227,6 @@ def activity_submissions_api(request, activity_id=None):
         except Exception:
             result_status = None
         if result_status is None:
-            # fallback to submission_status or N/A
             result_status = r.get("submission_status") or "N/A"
 
         data.append({
@@ -1139,6 +1250,7 @@ def activity_submissions_api(request, activity_id=None):
                 "children": r["student_children"],
                 "infants": r["student_infants"],
                 "max_price": r["student_max_price"],
+                # passengers list now contains passenger dicts from flightapp_passengerinfo augmented
                 "passengers": student_passengers,
             },
 
@@ -1166,6 +1278,7 @@ def activity_submissions_api(request, activity_id=None):
 
                 "passenger_details": passenger_points,
                 "passenger_total": passenger_total,
+                "expected_passenger_total": expected_total,
             },
 
             "correctness": {
