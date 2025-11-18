@@ -341,7 +341,7 @@ class ActivitySubmissionAdmin(admin.ModelAdmin):
                 'required_children',
                 'required_infants',
                 'require_passenger_details',
-                'required_max_price'
+                
             ],
             'classes': ['collapse']
         }),

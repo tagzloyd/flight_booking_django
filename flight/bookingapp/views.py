@@ -30,13 +30,20 @@ def calculate_activity_score(booking, activity):
     print(f"Activity: {activity.title}")
     print(f"Total points available: {total_points}")
     
-    # Base points for completing the booking (25%)
-    base_points = total_points * 0.25
+    # CORRECTED WEIGHTS - Total 100%
+    base_weight = 0.25      # 25% - Completion
+    passenger_weight = 0.25 # 25% - Passenger requirements  
+    price_weight = 0.20     # 20% - Budget compliance (now always full points)
+    compliance_weight = 0.15 # 15% - Trip type & class
+    addon_weight = 0.15     # 15% - Add-ons
+    
+    # 1. Base points for completing the booking (25%)
+    base_points = total_points * base_weight
     points_earned += base_points
     print(f"Base points (completion): {base_points}")
     
-    # Check passenger requirements (25% of total)
-    passenger_points = total_points * 0.25
+    # 2. Check passenger requirements (25% of total)
+    passenger_points = total_points * passenger_weight
     booking_details = booking.details.all()
     
     # Count passenger types in booking
@@ -56,78 +63,113 @@ def calculate_activity_score(booking, activity):
     print(f"Required - Adults: {activity.required_passengers}, Children: {activity.required_children}, Infants: {activity.required_infants}")
     print(f"Actual - Adults: {adult_count}, Children: {child_count}, Infants: {infant_count}")
     
-    # Calculate passenger match percentage
-    passenger_match = 0
-    if adult_count == activity.required_passengers:
-        passenger_match += 0.5  # 50% for adults
-    else:
-        deduction_reasons.append(f"Adult passenger count mismatch: required {activity.required_passengers}, got {adult_count}")
+    # FIXED: Calculate passenger match with proper handling for zero requirements
+    total_required_passengers = activity.required_passengers + activity.required_children + activity.required_infants
     
-    if child_count == activity.required_children:
-        passenger_match += 0.3  # 30% for children
-    else:
-        deduction_reasons.append(f"Child passenger count mismatch: required {activity.required_children}, got {child_count}")
-    
-    if infant_count == activity.required_infants:
-        passenger_match += 0.2  # 20% for infants
-    else:
-        deduction_reasons.append(f"Infant passenger count mismatch: required {activity.required_infants}, got {infant_count}")
-    
-    passenger_earned = passenger_points * passenger_match
-    points_earned += passenger_earned
-    print(f"Passenger match: {passenger_match * 100}% -> {passenger_earned} points")
-    
-    # Check price compliance (20% of total)
-    price_points = total_points * 0.2
-    if activity.required_max_price:
-        total_amount = sum(detail.price for detail in booking_details if detail.passenger.passenger_type.lower() != 'infant')
+    if total_required_passengers > 0:
+        # Calculate match percentage based on actual requirements
+        passenger_match = 0
+        max_possible_match = 0
         
-        if total_amount <= float(activity.required_max_price):
-            points_earned += price_points
-            print(f"Price compliance: Within budget -> {price_points} points")
+        # Adults (50% weight if required, otherwise 0)
+        if activity.required_passengers > 0:
+            max_possible_match += 0.5
+            if adult_count == activity.required_passengers:
+                passenger_match += 0.5
+            else:
+                deduction_reasons.append(f"Adult passenger count mismatch: required {activity.required_passengers}, got {adult_count}")
+        elif adult_count > 0:
+            # Extra adults when not required - small penalty
+            passenger_match += 0.4  # Reduced points for unnecessary adults
+            deduction_reasons.append(f"Extra adults booked: {adult_count} (none required)")
+        
+        # Children (30% weight if required, otherwise 0)  
+        if activity.required_children > 0:
+            max_possible_match += 0.3
+            if child_count == activity.required_children:
+                passenger_match += 0.3
+            else:
+                deduction_reasons.append(f"Child passenger count mismatch: required {activity.required_children}, got {child_count}")
+        elif child_count > 0:
+            # Extra children when not required - small penalty
+            passenger_match += 0.2  # Reduced points for unnecessary children
+            deduction_reasons.append(f"Extra children booked: {child_count} (none required)")
+        
+        # Infants (20% weight if required, otherwise 0)
+        if activity.required_infants > 0:
+            max_possible_match += 0.2
+            if infant_count == activity.required_infants:
+                passenger_match += 0.2
+            else:
+                deduction_reasons.append(f"Infant passenger count mismatch: required {activity.required_infants}, got {infant_count}")
+        elif infant_count > 0:
+            # Extra infants when not required - small penalty  
+            passenger_match += 0.1  # Reduced points for unnecessary infants
+            deduction_reasons.append(f"Extra infants booked: {infant_count} (none required)")
+        
+        # Normalize if max possible is less than 1.0 (when some passenger types not required)
+        if max_possible_match > 0:
+            normalized_match = passenger_match / max_possible_match
         else:
-            # Deduct points proportionally for going over budget
-            overage_percentage = min((float(total_amount) - float(activity.required_max_price)) / float(activity.required_max_price), 1.0)
-            price_deduction = price_points * overage_percentage
-            price_earned = price_points - price_deduction
-            points_earned += price_earned
-            deduction_reasons.append(f"Exceeded budget by {overage_percentage * 100:.1f}% (₱{total_amount - float(activity.required_max_price):.2f} over)")
-            print(f"Price compliance: Over budget -> {price_earned} points")
+            normalized_match = 1.0  # No passenger requirements = full points
+            
     else:
-        # No budget limit - full points
-        points_earned += price_points
-        print(f"Price compliance: No budget limit -> {price_points} points")
+        # No passenger requirements at all
+        normalized_match = 1.0
     
-    # Check trip type and class (15% of total)
-    compliance_points = total_points * 0.15
-    compliance_match = 0
+    passenger_earned = passenger_points * normalized_match
+    points_earned += passenger_earned
+    print(f"Passenger match: {normalized_match * 100}% -> {passenger_earned} points")
     
-    if booking.trip_type == activity.required_trip_type:
-        compliance_match += 0.5
+    # 3. Price compliance (20% of total) - NOW ALWAYS FULL POINTS
+    price_points = total_points * price_weight
+    price_earned = price_points  # Always full points since budget is removed
+    points_earned += price_earned
+    print(f"Price compliance: No budget limit -> {price_earned} points")
+    
+    # 4. Check trip type and class (15% of total)
+    compliance_points = total_points * compliance_weight
+    
+    # Trip type check (50% of compliance points)
+    trip_type_match = booking.trip_type == activity.required_trip_type
+    if trip_type_match:
         print(f"Trip type match: {booking.trip_type} == {activity.required_trip_type}")
     else:
         deduction_reasons.append(f"Trip type mismatch: required {activity.required_trip_type}, got {booking.trip_type}")
     
-    # Check if any booking detail matches the required travel class
-    has_correct_class = any(
-        detail.seat_class and detail.seat_class.name.lower() == activity.required_travel_class.lower() 
-        for detail in booking_details
-    )
+    # Travel class check (50% of compliance points) - FIXED: Only need at least one passenger with correct class
+    has_correct_class = False
+    actual_classes = set()
+    
+    for detail in booking_details:
+        if detail.seat_class:
+            class_name = detail.seat_class.name.lower()
+            actual_classes.add(class_name)
+            if class_name == activity.required_travel_class.lower():
+                has_correct_class = True
+                break  # Only need one passenger with correct class
+    
     if has_correct_class:
-        compliance_match += 0.5
         print(f"Travel class match: Found {activity.required_travel_class}")
     else:
-        actual_classes = ", ".join(set([detail.seat_class.name for detail in booking_details if detail.seat_class]))
-        deduction_reasons.append(f"Travel class mismatch: required {activity.required_travel_class}, got {actual_classes}")
+        deduction_reasons.append(f"Travel class mismatch: required {activity.required_travel_class}, got {', '.join(actual_classes)}")
     
+    # Calculate compliance points
+    compliance_match = 0
+    if trip_type_match:
+        compliance_match += 0.5
+    if has_correct_class:
+        compliance_match += 0.5
+        
     compliance_earned = compliance_points * compliance_match
     points_earned += compliance_earned
     print(f"Compliance match: {compliance_match * 100}% -> {compliance_earned} points")
     
-    # Add-on compliance (15% of total)
-    addon_points = total_points * 0.15
-    addon_score = 0
+    # 5. Add-on compliance (15% of total)
+    addon_points = total_points * addon_weight
     
+    # This should use the submission's calculated addon_score
+    # For now, we'll calculate it here but it should come from submission.addon_score
     if hasattr(activity, 'activity_addons') and activity.activity_addons.exists() and activity.addon_grading_enabled:
         required_addons = activity.activity_addons.filter(is_required=True)
         optional_addons = activity.activity_addons.filter(is_required=False)
@@ -137,51 +179,43 @@ def calculate_activity_score(booking, activity):
         
         print(f"Add-on Requirements - Required: {total_required_addons}, Optional: {total_optional_addons}")
         
-        # Track matched add-ons
-        matched_required_addons = 0
-        matched_optional_addons = 0
+        # Simple scoring: count matched add-ons
+        matched_required = 0
+        matched_optional = 0
         
-        # Check each booking detail for add-ons
+        student_addons = set()
         for detail in booking_details:
-            detail_addons = detail.addons.all()
-            
-            # Check required add-ons
-            for required_addon_req in required_addons:
-                if required_addon_req.addon in detail_addons:
-                    matched_required_addons += 1
-                    print(f"✅ Required add-on matched: {required_addon_req.addon.name}")
-                    break  # Count each required add-on only once per passenger
-            
-            # Check optional add-ons (bonus points)
-            for optional_addon_req in optional_addons:
-                if optional_addon_req.addon in detail_addons:
-                    matched_optional_addons += 1
-                    print(f"✅ Optional add-on matched: {optional_addon_req.addon.name}")
-                    break  # Count each optional add-on only once per passenger
+            for addon in detail.addons.all():
+                student_addons.add(addon.id)
         
-        # Calculate required add-on score (70% of add-on points)
+        for req_addon in required_addons:
+            if req_addon.addon.id in student_addons:
+                matched_required += 1
+                print(f"✅ Required add-on matched: {req_addon.addon.name}")
+        
+        for opt_addon in optional_addons:
+            if opt_addon.addon.id in student_addons:
+                matched_optional += 1
+                print(f"✅ Optional add-on matched: {opt_addon.addon.name}")
+        
+        # Calculate add-on score
         if total_required_addons > 0:
-            required_addon_ratio = matched_required_addons / (total_required_addons * len(booking_details))
-            addon_score += (addon_points * 0.7) * required_addon_ratio
-            print(f"Required add-ons: {matched_required_addons}/{total_required_addons * len(booking_details)} -> {required_addon_ratio * 100}%")
+            required_ratio = matched_required / total_required_addons
+        else:
+            required_ratio = 1.0  # No required add-ons = full points for required portion
             
-            if matched_required_addons < total_required_addons * len(booking_details):
-                missing_required = (total_required_addons * len(booking_details)) - matched_required_addons
-                deduction_reasons.append(f"Missing {missing_required} required add-on(s)")
-        else:
-            # If no required add-ons, give full points for this portion
-            addon_score += addon_points * 0.7
-        
-        # Calculate optional add-on score (30% of add-on points - bonus)
         if total_optional_addons > 0:
-            optional_addon_ratio = matched_optional_addons / (total_optional_addons * len(booking_details))
-            addon_score += (addon_points * 0.3) * optional_addon_ratio
-            print(f"Optional add-ons: {matched_optional_addons}/{total_optional_addons * len(booking_details)} -> {optional_addon_ratio * 100}%")
+            optional_ratio = matched_optional / total_optional_addons
         else:
-            # If no optional add-ons, give full points for this portion
-            addon_score += addon_points * 0.3
+            optional_ratio = 1.0  # No optional add-ons = full points for optional portion
         
-        print(f"Add-ons total score: {addon_score}/{addon_points}")
+        # 70% for required, 30% for optional (bonus)
+        addon_score = addon_points * (0.7 * required_ratio + 0.3 * optional_ratio)
+        
+        if matched_required < total_required_addons:
+            deduction_reasons.append(f"Missing {total_required_addons - matched_required} required add-on(s)")
+            
+        print(f"Add-ons: {matched_required}/{total_required_addons} required, {matched_optional}/{total_optional_addons} optional -> {addon_score} points")
     else:
         # If no add-on requirements or add-on grading disabled, give full add-on points
         addon_score = addon_points
@@ -193,7 +227,7 @@ def calculate_activity_score(booking, activity):
     final_score = Decimal(str(min(points_earned, total_points)))
     
     print(f"Final score: {final_score}/{activity.total_points}")
-    print(f"Breakdown: Base={base_points}, Passengers={passenger_earned}, Price={price_earned if 'price_earned' in locals() else price_points}, Compliance={compliance_earned}, Addons={addon_score}")
+    print(f"Breakdown: Base={base_points}, Passengers={passenger_earned}, Price={price_earned}, Compliance={compliance_earned}, Addons={addon_score}")
     if deduction_reasons:
         print(f"Deduction reasons: {', '.join(deduction_reasons)}")
     print("=====================")
@@ -338,12 +372,12 @@ def validate_booking_for_activity(booking, activity):
             return False
             
         # Check total price if max price is specified
-        if activity.required_max_price:
-            total_amount = sum(detail.price for detail in booking_passengers if detail.passenger.passenger_type.lower() != 'infant')
-            print(f"Total amount: {total_amount}, Max allowed: {activity.required_max_price}")
-            if total_amount > activity.required_max_price:
-                print("❌ Price exceeds maximum")
-                return False
+        # if activity.required_max_price:
+        #     total_amount = sum(detail.price for detail in booking_passengers if detail.passenger.passenger_type.lower() != 'infant')
+        #     print(f"Total amount: {total_amount}, Max allowed: {activity.required_max_price}")
+        #     if total_amount > activity.required_max_price:
+        #         print("❌ Price exceeds maximum")
+        #         return False
         
         print("✅ Validation passed")
         return True
@@ -447,7 +481,7 @@ def home(request):
                 # SET ACTIVITY SESSION DATA
                 request.session['activity_id'] = activity.id
                 request.session['activity_requirements'] = {
-                    'max_price': float(activity.required_max_price) if activity.required_max_price else None,
+                    'max_price': None,  # Always set to None since budget is removed
                     'travel_class': activity.required_travel_class,
                     'require_passenger_details': activity.require_passenger_details,
                 }
@@ -2402,7 +2436,7 @@ def payment_success(request):
     print(f"Activity ID from session: {activity_id}")
     print(f"Practice Booking: {request.session.get('is_practice_booking')}")
 
-     # Check if this is a practice booking
+    # Check if this is a practice booking
     if request.session.get('is_practice_booking'):
         return save_practice_booking(request)
     
@@ -2429,35 +2463,64 @@ def payment_success(request):
             else:
                 print("🆕 No existing submission found - creating new submission")
                 
-                # Calculate score before creating submission
-                score = calculate_activity_score(booking, activity)
-                print(f"📊 Calculated score: {score}/{activity.total_points}")
-                
-                # Create activity submission with score
                 try:
-                    submission = ActivitySubmission.objects.create(
-                        activity=activity,
-                        student=student,
-                        booking=booking,
-                        status='submitted',
-                        required_trip_type=activity.required_trip_type,
-                        required_travel_class=activity.required_travel_class,
-                        required_passengers=activity.required_passengers,
-                        required_children=activity.required_children,
-                        required_infants=activity.required_infants,
-                        require_passenger_details=activity.require_passenger_details,
-                        required_max_price=activity.required_max_price,
-                        score=score  # Add the calculated score
-                    )
+                    # Calculate score before creating submission
+                    score = calculate_activity_score(booking, activity)
+                    print(f"📊 Calculated score: {score}/{activity.total_points}")
+                    
+                    # FIX: Create activity submission WITHOUT required_max_price
+                    submission_data = {
+                        'activity': activity,
+                        'student': student,
+                        'booking': booking,
+                        'status': 'submitted',
+                        'required_trip_type': activity.required_trip_type,
+                        'required_travel_class': activity.required_travel_class,
+                        'required_passengers': activity.required_passengers,
+                        'required_children': activity.required_children,
+                        'required_infants': activity.required_infants,
+                        'require_passenger_details': activity.require_passenger_details,
+                        # REMOVED: required_max_price since it's no longer in the model
+                        'score': score,
+                        'submitted_at': timezone.now()
+                    }
+                    
+                    # Create the submission
+                    submission = ActivitySubmission.objects.create(**submission_data)
+                    
+                    # Calculate add-on scores
+                    addon_score, max_addon_points = submission.calculate_addon_score()
+                    submission.addon_score = addon_score
+                    submission.max_addon_points = max_addon_points
+                    submission.save()
+                    
                     print(f"✅ SUCCESS: Created submission: {submission.id}")
                     print(f"   Submission details - Activity: {submission.activity.title}, Student: {submission.student.first_name}, Booking: {submission.booking.id}, Score: {submission.score}")
+                    print(f"   Add-on Score: {submission.addon_score}/{submission.max_addon_points}")
                     messages.success(request, f"Activity '{activity.title}' submitted successfully! Score: {score}/{activity.total_points}")
                     
                 except Exception as create_error:
                     print(f"❌ ERROR creating submission: {create_error}")
                     import traceback
                     traceback.print_exc()
-                    messages.error(request, f"Error creating submission: {create_error}")
+                    
+                    # Create minimal submission without score if creation fails
+                    minimal_submission_data = {
+                        'activity': activity,
+                        'student': student,
+                        'booking': booking,
+                        'status': 'submitted',
+                        'required_trip_type': activity.required_trip_type,
+                        'required_travel_class': activity.required_travel_class,
+                        'required_passengers': activity.required_passengers,
+                        'required_children': activity.required_children,
+                        'required_infants': activity.required_infants,
+                        'require_passenger_details': activity.require_passenger_details,
+                        'score': Decimal('0.0'),
+                        'submitted_at': timezone.now()
+                    }
+                    submission = ActivitySubmission.objects.create(**minimal_submission_data)
+                    messages.warning(request, f"Activity submitted but scoring failed. Please contact instructor.")
             
             # NOW clear the session data after successful submission creation
             request.session.pop('activity_id', None)
@@ -2478,7 +2541,6 @@ def payment_success(request):
             print("   - No booking_id in session")
         if not activity_id:
             print("   - No activity_id in session")
-
 
     # Keep student login only
     student_id = request.session.get('student_id')
@@ -2908,17 +2970,17 @@ def get_submission_comparison(submission, activity, booking):
         recommendations.append(f"Book exactly {activity.required_infants} infant passenger(s) for full points")
     
     # Price compliance
-    if activity.required_max_price and total_price > float(activity.required_max_price):
-        overage_amount = total_price - float(activity.required_max_price)
-        overage_percentage = (overage_amount / float(activity.required_max_price)) * 100
-        deductions.append({
-            'category': 'Budget',
-            'issue': f'Budget exceeded by ${overage_amount:.2f}',
-            'details': f'Your booking cost ${total_price:.2f} but the maximum allowed was ${activity.required_max_price} (${overage_amount:.2f} over budget)',
-            'points_lost': 'Up to 20%',
-            'type': 'budget'
-        })
-        recommendations.append(f"Look for cheaper flight options or different travel dates to stay within ${activity.required_max_price} budget")
+    # if activity.required_max_price and total_price > float(activity.required_max_price):
+    #     overage_amount = total_price - float(activity.required_max_price)
+    #     overage_percentage = (overage_amount / float(activity.required_max_price)) * 100
+    #     deductions.append({
+    #         'category': 'Budget',
+    #         'issue': f'Budget exceeded by ${overage_amount:.2f}',
+    #         'details': f'Your booking cost ${total_price:.2f} but the maximum allowed was ${activity.required_max_price} (${overage_amount:.2f} over budget)',
+    #         'points_lost': 'Up to 20%',
+    #         'type': 'budget'
+    #     })
+    #     recommendations.append(f"Look for cheaper flight options or different travel dates to stay within ${activity.required_max_price} budget")
     
     # Travel class compliance
     if not has_correct_class:
@@ -2986,10 +3048,9 @@ def get_submission_comparison(submission, activity, booking):
             'infants_match': infant_count == activity.required_infants,
         },
         'price_comparison': {
-            'required_max_price': activity.required_max_price,
             'submitted_total': total_price,
-            'within_budget': not activity.required_max_price or total_price <= float(activity.required_max_price),
-            'overage': total_price - float(activity.required_max_price) if activity.required_max_price and total_price > float(activity.required_max_price) else 0,
+            'within_budget': True,  # Always true since budget is removed
+            'overage': 0,  # Always 0 since budget is removed
         },
         'flight_comparison': {
             'required_trip_type': activity.required_trip_type,
@@ -3026,16 +3087,8 @@ def calculate_passenger_points(adult_count, child_count, infant_count, activity)
     return total_points * match_percentage
 
 def calculate_price_points(total_price, activity):
-    """Calculate points for price compliance"""
-    if not activity.required_max_price:
-        return float(activity.total_points) * 0.2
-    
-    price_points = float(activity.total_points) * 0.2
-    if total_price <= float(activity.required_max_price):
-        return price_points
-    else:
-        overage_percentage = min((total_price - float(activity.required_max_price)) / float(activity.required_max_price), 1.0)
-        return price_points * (1 - overage_percentage)
+    """Calculate points for price compliance - now always full points"""
+    return float(activity.total_points) * 0.2  # Always full points since budget is removed
 
 def calculate_compliance_points(booking, activity, has_correct_class):
     """Calculate points for trip type and travel class compliance"""
@@ -3069,12 +3122,14 @@ def student_work_detail(request, submission_id):
         print(f"Submission: {submission.id}")
         print(f"Activity: {activity.title}")
         print(f"Booking: {booking.id}")
+        print(f"Submission Score: {submission.score}")
+        print(f"Add-on Score: {submission.addon_score}")
         
         # Get detailed booking information
         booking_details = get_booking_details(booking)
         
         # Get comprehensive comparison data
-        comparison_data = get_detailed_comparison(activity, booking, booking_details)
+        comparison_data = get_detailed_comparison(activity, booking, booking_details, submission)
         
         # Calculate add-on score
         addon_score, max_addon_points = submission.calculate_addon_score()
@@ -3500,7 +3555,9 @@ def get_booking_details(booking):
     return details
 
 
-def get_detailed_comparison(activity, booking, booking_details):
+from decimal import Decimal
+
+def get_detailed_comparison(activity, booking, booking_details, submission=None):
     """Get detailed comparison between activity requirements and student work"""
     
     # Initialize counts
@@ -3548,10 +3605,9 @@ def get_detailed_comparison(activity, booking, booking_details):
     
     # Build price comparison
     price_comparison = {
-        'required_max_price': activity.required_max_price,
         'submitted_total': total_price,
-        'within_budget': not activity.required_max_price or total_price <= float(activity.required_max_price or 0),
-        'overage': total_price - float(activity.required_max_price) if activity.required_max_price and total_price > float(activity.required_max_price) else 0,
+        'within_budget': True,  # Always true since budget is removed
+        'overage': 0,  # Always 0 since budget is removed
     }
     
     # Build flight comparison
@@ -3569,7 +3625,17 @@ def get_detailed_comparison(activity, booking, booking_details):
     deductions = []
     recommendations = []
     
-    # Passenger requirements
+    # 1. Trip Type Requirement
+    requirements.append({
+        'category': 'Trip Type',
+        'requirement': f'{activity.required_trip_type.title()} Trip',
+        'student_work': f'{booking.trip_type.title()} Trip',
+        'met': booking.trip_type == activity.required_trip_type,
+        'icon': '✓' if booking.trip_type == activity.required_trip_type else '✗',
+        'weight': 'High'
+    })
+    
+    # 2. Passenger Count Requirements
     requirements.append({
         'category': 'Passengers',
         'requirement': f'{activity.required_passengers} Adult(s)',
@@ -3599,101 +3665,109 @@ def get_detailed_comparison(activity, booking, booking_details):
             'weight': 'Medium'
         })
     
-    # Add deductions for mismatches
-    if not passenger_comparison['adults_match']:
-        deductions.append({
-            'category': 'Passenger Count',
-            'issue': f'Adults: Required {activity.required_passengers}, You booked {adult_count}',
-            'details': f'You booked {adult_count} adult(s) but the activity required {activity.required_passengers} adult(s)',
-            'type': 'passenger_count'
-        })
-        recommendations.append(f"Book exactly {activity.required_passengers} adult passenger(s)")
-    
-    if not passenger_comparison['children_match']:
-        deductions.append({
-            'category': 'Passenger Count',
-            'issue': f'Children: Required {activity.required_children}, You booked {child_count}',
-            'details': f'You booked {child_count} child(ren) but the activity required {activity.required_children} child(ren)',
-            'type': 'passenger_count'
-        })
-        recommendations.append(f"Book exactly {activity.required_children} child passenger(s)")
-    
-    if not passenger_comparison['infants_match']:
-        deductions.append({
-            'category': 'Passenger Count',
-            'issue': f'Infants: Required {activity.required_infants}, You booked {infant_count}',
-            'details': f'You booked {infant_count} infant(s) but the activity required {activity.required_infants} infant(s)',
-            'type': 'passenger_count'
-        })
-        recommendations.append(f"Book exactly {activity.required_infants} infant passenger(s)")
-    
-    # Budget requirement
-    if activity.required_max_price:
-        requirements.append({
-            'category': 'Budget',
-            'requirement': f'Under ₱{activity.required_max_price}',
-            'student_work': f'₱{total_price:.2f}',
-            'met': price_comparison['within_budget'],
-            'icon': '✓' if price_comparison['within_budget'] else '✗',
-            'weight': 'High'
-        })
-        
-        if not price_comparison['within_budget']:
-            deductions.append({
-                'category': 'Budget',
-                'issue': f'Budget exceeded by ₱{price_comparison["overage"]:.2f}',
-                'details': f'Your booking cost ₱{total_price:.2f} but the maximum allowed was ₱{activity.required_max_price}',
-                'type': 'budget'
-            })
-            recommendations.append(f"Look for cheaper options to stay within ₱{activity.required_max_price} budget")
-    
-    # Trip type requirement
-    requirements.append({
-        'category': 'Trip Type',
-        'requirement': f'{activity.required_trip_type.title()} Trip',
-        'student_work': f'{submitted_trip_type.title()} Trip',
-        'met': flight_comparison['trip_type_match'],
-        'icon': '✓' if flight_comparison['trip_type_match'] else '✗',
-        'weight': 'High'
-    })
-    
-    if not flight_comparison['trip_type_match']:
-        deductions.append({
-            'category': 'Trip Type',
-            'issue': f'Required {activity.required_trip_type.title()}, You booked {submitted_trip_type.title()}',
-            'details': f'The activity required a {activity.required_trip_type.title()} trip',
-            'type': 'trip_type'
-        })
-        recommendations.append(f"Select {activity.required_trip_type.title()} trip type")
-    
-    # Travel class requirement
+    # 3. Travel Class Requirement
     requirements.append({
         'category': 'Travel Class',
         'requirement': f'{activity.required_travel_class.title()} Class',
         'student_work': actual_classes,
-        'met': flight_comparison['has_correct_class'],
-        'icon': '✓' if flight_comparison['has_correct_class'] else '✗',
+        'met': has_correct_class,
+        'icon': '✓' if has_correct_class else '✗',
         'weight': 'High'
     })
     
-    if not flight_comparison['has_correct_class']:
-        deductions.append({
-            'category': 'Travel Class',
-            'issue': f'Required {activity.required_travel_class.title()}, You booked {actual_classes}',
-            'details': f'The activity required {activity.required_travel_class.title()} class',
-            'type': 'travel_class'
-        })
-        recommendations.append(f"Select {activity.required_travel_class.title()} class when booking")
+    # 4. Budget Requirement
+    # if activity.required_max_price:
+    #     requirements.append({
+    #         'category': 'Budget',
+    #         'requirement': f'Under ${activity.required_max_price}',
+    #         'student_work': f'${total_price:.2f}',
+    #         'met': total_price <= float(activity.required_max_price),
+    #         'icon': '✓' if total_price <= float(activity.required_max_price) else '✗',
+    #         'weight': 'High',
+    #         'overage': total_price - float(activity.required_max_price) if total_price > float(activity.required_max_price) else 0
+    #     })
     
-    # Calculate score breakdown
-    score_breakdown = calculate_detailed_score_breakdown(activity, booking, booking_details, seat_class_names)
+    # Calculate score breakdown using the ACTUAL calculated points
+    total_points = float(activity.total_points)
     
-    # Add total possible points for each category
-    score_breakdown.update({
-        'total_possible_passenger_points': float(activity.total_points) * 0.25,
-        'total_possible_price_points': float(activity.total_points) * 0.20,
-        'total_possible_compliance_points': float(activity.total_points) * 0.15,
-    })
+    # Use the submission's actual score if available
+    if submission and submission.score is not None:
+        actual_score = float(submission.score)
+        
+        # Calculate the ACTUAL earned points from each category
+        # These should match what calculate_activity_score computed
+        base_points = total_points * 0.25  # Always 25% for completion
+        
+        # Calculate passenger points based on actual match
+        passenger_match = 0
+        if adult_count == activity.required_passengers:
+            passenger_match += 0.5
+        if child_count == activity.required_children:
+            passenger_match += 0.3  
+        if infant_count == activity.required_infants:
+            passenger_match += 0.2
+        passenger_points = (total_points * 0.25) * passenger_match
+        
+        # Price points - always full points since budget is removed
+        price_points = total_points * 0.20
+        
+        # Calculate compliance points based on actual match
+        compliance_match = 0
+        if booking.trip_type == activity.required_trip_type:
+            compliance_match += 0.5
+        if has_correct_class:
+            compliance_match += 0.5
+        compliance_points = (total_points * 0.15) * compliance_match
+        
+        # Use actual add-on score from submission (convert to float if it's Decimal)
+        addon_points = float(submission.addon_score) if submission.addon_score else 0.0
+        
+    else:
+        # Fallback calculation if no submission
+        base_points = total_points * 0.25
+        
+        passenger_match = 0
+        if adult_count == activity.required_passengers:
+            passenger_match += 0.5
+        if child_count == activity.required_children:
+            passenger_match += 0.3  
+        if infant_count == activity.required_infants:
+            passenger_match += 0.2
+        passenger_points = (total_points * 0.25) * passenger_match
+        
+         # Price points - always full points since budget is removed
+        price_points = total_points * 0.20
+        
+        
+        compliance_match = 0
+        if booking.trip_type == activity.required_trip_type:
+            compliance_match += 0.5
+        if has_correct_class:
+            compliance_match += 0.5
+        compliance_points = (total_points * 0.15) * compliance_match
+        
+        addon_points = total_points * 0.15  # Default full points
+    
+    # Calculate total earned ensuring all values are floats
+    total_earned = float(base_points) + float(passenger_points) + float(price_points) + float(compliance_points)
+    if activity.addon_grading_enabled:
+        total_earned += float(addon_points)
+    
+    # Build the final score breakdown with ACTUAL earned points
+    score_breakdown = {
+        'base_points': float(base_points),
+        'passenger_points': float(passenger_points),
+        'price_points': float(price_points),
+        'compliance_points': float(compliance_points),
+        'addon_points': float(addon_points) if activity.addon_grading_enabled else 0.0,
+        'total_earned': total_earned,
+        'total_possible': float(total_points),
+        'total_possible_base_points': float(total_points) * 0.25,
+        'total_possible_passenger_points': float(total_points) * 0.25,
+        'total_possible_price_points': float(total_points) * 0.20,
+        'total_possible_compliance_points': float(total_points) * 0.15,
+        'total_possible_addon_points': float(total_points) * 0.15 if activity.addon_grading_enabled else 0.0,
+    }
     
     return {
         'passenger_comparison': passenger_comparison,
@@ -3704,6 +3778,9 @@ def get_detailed_comparison(activity, booking, booking_details):
         'recommendations': recommendations,
         'score_breakdown': score_breakdown,
     }
+
+
+
 
 def calculate_detailed_score_breakdown(activity, booking, booking_details, seat_class_names):
     """Calculate detailed score breakdown for display with correct percentages"""

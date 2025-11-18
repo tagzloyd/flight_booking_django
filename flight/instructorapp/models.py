@@ -102,7 +102,7 @@ class Activity(models.Model):
     # Passenger Information Requirements
     require_passenger_details = models.BooleanField(default=True)
     
-    required_max_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    # REMOVED: required_max_price field
     
     # Instructions & Timing
     instructions = models.TextField()
@@ -302,7 +302,7 @@ class ActivitySubmission(models.Model):
     required_children = models.PositiveIntegerField(default=0)
     required_infants = models.PositiveIntegerField(default=0)
     require_passenger_details = models.BooleanField(default=True)
-    required_max_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    # REMOVED: required_max_price field
 
     # Add-on grading fields
     addon_score = models.DecimalField(max_digits=6, decimal_places=2, default=0.00, help_text="Points earned from add-ons")

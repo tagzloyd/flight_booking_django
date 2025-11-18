@@ -5,7 +5,7 @@
 <div class="flex flex-1 flex-col">
     <div class="flex mb-2">
         <a href="{% url 'section_detail' activity.section.id %}" class="ml-5 flex text-xl items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="#045946" viewBox="0 0 24 24">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="#093704" viewBox="0 0 24 24">
                 <path d="M14.29 6.29 8.59 12l5.7 5.71 1.42-1.42-4.3-4.29 4.3-4.29z"></path>
             </svg> 
             Back to Section
@@ -15,13 +15,13 @@
 
     <div class="flex flex-col mt-10 px-30 space-y-10">
         <div class="flex gap-10 text-xs font-medium">
-            <a href="#" class="text-[#045946] border-b-2 border-[#045946] pb-1">Instruction/s</a>
-            <a href="#" class="text-gray-600 hover:text-[#045946]">Student work</a>
+            <a href="#" class="text-[#093704] border-b-2 border-[#093704] pb-1">Instruction/s</a>
+            <a href="#" class="text-gray-600 hover:text-[#093704]">Student work</a>
         </div>
 
         <div class="flex justify-between items-center">
             <div class="flex gap-6 items-center">
-                <div class="w-10 h-10 rounded-full bg-[#045946] flex items-center justify-center">
+                <div class="w-10 h-10 rounded-full bg-[#093704] flex items-center justify-center">
                     <span class="text-white text-xs font-semibold">
                         {{ activity.activity_type|slice:":1"|upper }}
                     </span>
@@ -57,7 +57,7 @@
                 <button class="text-xs text-gray-700 bg-[#FFC83D] py-2 px-7 rounded-full">
                     Trip type: <strong class="text-black text-sm">{{ activity.required_trip_type|title }}</strong>
                 </button>
-                <button class="text-xs text-gray-100 bg-[#045946] py-2 px-7 rounded-full">
+                <button class="text-xs text-gray-100 bg-[#093704] py-2 px-7 rounded-full">
                     Class: <strong class="text-white text-sm">{{ activity.required_travel_class|title }}</strong>
                 </button>
             </div>
@@ -264,7 +264,7 @@
                             
                             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                                 <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-[#045946] rounded-full flex items-center justify-center">
+                                    <div class="w-8 h-8 bg-[#093704] rounded-full flex items-center justify-center">
                                         <span class="text-white text-xs font-semibold">+</span>
                                     </div>
                                     <div>
@@ -331,7 +331,7 @@
                         
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                             <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-[#045946] rounded-full flex items-center justify-center">
+                                <div class="w-8 h-8 bg-[#093704] rounded-full flex items-center justify-center">
                                     <span class="text-white text-xs font-semibold">+</span>
                                 </div>
                                 <div>
@@ -407,7 +407,7 @@
                 {% for addon_req in activity.activity_addons.all %}
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-[#045946] rounded-full flex items-center justify-center">
+                        <div class="w-8 h-8 bg-[#093704] rounded-full flex items-center justify-center">
                             <span class="text-white text-xs font-semibold">+</span>
                         </div>
                         <div>
@@ -472,14 +472,14 @@
                     <p class="text-sm text-green-600">Share this code with students to allow submissions</p>
                     <p class="text-xs text-green-500">Expires: {{ activity.code_expires_at|date:"M j, Y g:i A" }}</p>
                 </div>
-                <a href="{% url 'activity_submissions' activity.id %}" class="bg-[#045946] hover:bg-[#045946]/80 cursor-pointer py-3 w-[434px] text-lg text-white mx-auto block">
+                <a href="{% url 'activity_submissions' activity.id %}" class="bg-[#093704] hover:bg-[#093704]/80 cursor-pointer py-3 w-[434px] text-lg text-white mx-auto block">
                     View Submissions
                 </a>
             </div>
             {% else %}
             <form method="POST" action="{% url 'activate_activity' activity.id %}" class="text-center">
                 {% csrf_token %}
-                <button type="submit" class="bg-[#045946] hover:bg-[#045946]/80 cursor-pointer py-3 w-[434px] text-lg text-white mx-auto">
+                <button type="submit" class="bg-[#093704] hover:bg-[#093704]/80 cursor-pointer py-3 w-[434px] text-lg text-white mx-auto">
                     Activate Activity Code
                 </button>
             </form>

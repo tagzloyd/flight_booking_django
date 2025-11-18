@@ -26,9 +26,9 @@
     <div class="flex items-center justify-between">
         <!-- In your navigation menu -->
         <div class="text-xs space-x-10 font-medium">
-            <a href="{% url 'bookingapp:student_home' %}" class="text-[#045946] border-b-2 border-[#045946] pb-1">Active Activities</a>
-            <a href="{% url 'bookingapp:student_activities' %}" class="text-gray-600 hover:text-[#045946]">All Activities</a>
-            <a href="{% url 'bookingapp:practice_home' %}" class="text-gray-600 hover:text-[#045946]">Practice Booking</a>
+            <a href="{% url 'bookingapp:student_home' %}" class="text-[#093704] border-b-2 border-[#093704] pb-1">Active Activities</a>
+            <a href="{% url 'bookingapp:student_activities' %}" class="text-gray-600 hover:text-[#093704]">All Activities</a>
+            <a href="{% url 'bookingapp:practice_home' %}" class="text-gray-600 hover:text-[#093704]">Practice Booking</a>
         </div>
         <!-- Enrolled Sections -->
         {% if enrolled_sections %}
@@ -66,7 +66,7 @@
              onclick="window.location='{% url 'bookingapp:student_activity_detail' activity.id %}'">
             <div class="flex justify-between">
                 <div class="flex gap-10">
-                    <div class="w-10 h-10 rounded-full bg-[#045946] flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-full bg-[#093704] flex items-center justify-center">
                         <span class="text-white text-xs font-semibold">
                             {{ activity.activity_type|slice:":1"|upper }}
                         </span>
@@ -113,13 +113,13 @@
         {% empty %}
         <div class="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
             <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#045946" viewBox="0 0 24 24">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#093704" viewBox="0 0 24 24">
                     <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path>
                 </svg>
             </div>
             <h3 class="text-lg font-medium text-gray-600 mb-2">No active activities</h3>
             <p class="text-sm text-gray-500 mb-4">You don't have any active activities at the moment.</p>
-            <a href="{% url 'bookingapp:main' %}" class="bg-[#045946] hover:bg-[#045946]/80 text-white px-4 py-2 rounded-md text-sm">
+            <a href="{% url 'bookingapp:main' %}" class="bg-[#093704] hover:bg-[#093704]/80 text-white px-4 py-2 rounded-md text-sm">
                 Start Regular Booking
             </a>
         </div>

@@ -30,13 +30,13 @@
     <div class="flex-1 flex flex-col mx-35 mt-10">
         <div class="flex justify-between items-center">
             <div class="text-xs  space-x-10 font-medium">
-                <a href="#" class="text-[#045946] border-b-2 border-[#045946] pb-1">Activity</a>
-                <a href="#" class="text-gray-600 hover:text-[#045946]">People</a>
-                <a href="#" class="text-gray-600 hover:text-[#045946]">Settings</a>
+                <a href="#" class="text-[#093704] border-b-2 border-[#093704] pb-1">Activity</a>
+                <a href="#" class="text-gray-600 hover:text-[#093704]">People</a>
+                <a href="#" class="text-gray-600 hover:text-[#093704]">Settings</a>
             </div>
             <div class="flex gap-5">
                 <button onclick="openStudentModal()" class="text-sm bg-[#FFC83D] hover:bg-[#FFC83D]/80 px-5 py-2 cursor-pointer rounded-sm text-gray-800">Add Student</button>
-                <button onclick="openActivityModal()" class="text-sm bg-[#045946] hover:bg-[#045946]/80 px-5 py-2 cursor-pointer rounded-sm text-white">Add Task</button>
+                <button onclick="openActivityModal()" class="text-sm bg-[#093704] hover:bg-[#093704]/80 px-5 py-2 cursor-pointer rounded-sm text-white">Add Task</button>
             </div>
         </div>
 
@@ -56,7 +56,7 @@
                 <div class="border border-gray-400 rounded-md p-10 space-y-3 hover:bg-gray-200 cursor-pointer transition-colors">
                     <div class="flex justify-between">
                         <div class="flex gap-10">
-                            <div class="w-10 h-10 rounded-full bg-[#045946] flex items-center justify-center">
+                            <div class="w-10 h-10 rounded-full bg-[#093704] flex items-center justify-center">
                                 <span class="text-white text-xs font-semibold">
                                     {{ activity.activity_type|slice:":1"|upper }}
                                 </span>
@@ -80,9 +80,9 @@
                         <!-- Three dots menu -->
                         <div class="flex flex-col gap-1" onclick="toggleActivityMenu('menu-{{ activity.id }}', event)">
 
-                            <p class="w-[7px] h-[7px] rounded-full bg-[#045946]"></p>
-                            <p class="w-[7px] h-[7px] rounded-full bg-[#045946]"></p>
-                            <p class="w-[7px] h-[7px] rounded-full bg-[#045946]"></p>
+                            <p class="w-[7px] h-[7px] rounded-full bg-[#093704]"></p>
+                            <p class="w-[7px] h-[7px] rounded-full bg-[#093704]"></p>
+                            <p class="w-[7px] h-[7px] rounded-full bg-[#093704]"></p>
                         </div>
 
                         <!-- Activity Dropdown Menu -->
@@ -146,13 +146,13 @@
             <!-- Empty State -->
             <div class="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
                 <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#045946" viewBox="0 0 24 24">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#093704" viewBox="0 0 24 24">
                         <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path>
                     </svg>
                 </div>
                 <h3 class="text-lg font-medium text-gray-600 mb-2">No activities yet</h3>
                 <p class="text-sm text-gray-500 mb-4">Create your first activity to get started with this section</p>
-                <button onclick="openActivityModal()" class="bg-[#045946] hover:bg-[#045946]/80 text-white px-4 py-2 rounded-md text-sm">Create First Activity</button>
+                <button onclick="openActivityModal()" class="bg-[#093704] hover:bg-[#093704]/80 text-white px-4 py-2 rounded-md text-sm">Create First Activity</button>
             </div>
             {% endif %}
         </div>
@@ -162,7 +162,7 @@
 <!-- Add Student Modal -->
 <div id="studentModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div class="bg-[#045946] rounded-t-lg px-6 py-4 flex justify-between items-center">
+        <div class="bg-[#093704] rounded-t-lg px-6 py-4 flex justify-between items-center">
             <h2 class="text-xl font-semibold text-[#FFC83D]">Enroll Student</h2>
             <button onclick="closeStudentModal()" class="text-[#FFC83D] hover:text-yellow-300 text-2xl">
                 &times;
@@ -175,7 +175,7 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Student Number *</label>
-                        <input type="text" name="student_number" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]" placeholder="Enter student number" required>
+                        <input type="text" name="student_number" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]" placeholder="Enter student number" required>
                     </div>
                 </div>
 
@@ -183,7 +183,7 @@
                     <button type="button" onclick="closeStudentModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
                         Cancel
                     </button>
-                    <button type="submit" name="enroll_student" class="bg-[#045946] hover:bg-[#045946]/80 text-white px-6 py-2 rounded-md transition-colors">
+                    <button type="submit" name="enroll_student" class="bg-[#093704] hover:bg-[#093704]/80 text-white px-6 py-2 rounded-md transition-colors">
                         Enroll Student
                     </button>
                 </div>
@@ -195,7 +195,7 @@
 <!-- Add Activity Modal -->
 <div id="activityModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
-        <div class="bg-[#045946] rounded-t-lg px-6 py-4 flex justify-between items-center sticky top-0">
+        <div class="bg-[#093704] rounded-t-lg px-6 py-4 flex justify-between items-center sticky top-0">
             <h2 class="text-xl font-semibold text-[#FFC83D]">Create New Activity for {{ section.section_code }}</h2>
             <button onclick="closeActivityModal()" class="text-[#FFC83D] hover:text-yellow-300 text-2xl">
                 &times;
@@ -210,25 +210,25 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Activity Title *</label>
-                            <input type="text" name="title" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                            <input type="text" name="title" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Activity Type *</label>
                             <input type="text" name="activity_type" value="Flight Booking" required 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]"
                                 placeholder="e.g., Flight Booking, Seat Selection, Payment Processing">
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Instructions *</label>
-                            <textarea name="instructions" required rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]"></textarea>
+                            <textarea name="instructions" required rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]"></textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
-                            <input type="datetime-local" name="due_date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                            <input type="datetime-local" name="due_date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Total Points</label>
-                            <input type="number" name="total_points" value="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                            <input type="number" name="total_points" value="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                         </div>
                     </div>
 
@@ -238,14 +238,14 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Trip Type *</label>
-                                <select name="required_trip_type" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                <select name="required_trip_type" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                     <option value="one_way">One Way</option>
                                     <option value="round_trip">Round Trip</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Travel Class *</label>
-                                <select name="required_travel_class" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                <select name="required_travel_class" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                     <option value="economy">Economy</option>
                                     <option value="premium_economy">Premium Economy</option>
                                     <option value="business">Business</option>
@@ -254,7 +254,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Origin Airport *</label>
-                                <select name="required_origin" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                <select name="required_origin" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                     <option value="">Select Origin Airport</option>
                                     {% for airport in airports %}
                                     <option value="{{ airport.code }}">{{ airport.code }} - {{ airport.name }} ({{ airport.location }})</option>
@@ -263,7 +263,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Destination Airport *</label>
-                                <select name="required_destination" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                <select name="required_destination" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                     <option value="">Select Destination Airport</option>
                                     {% for airport in airports %}
                                     <option value="{{ airport.code }}">{{ airport.code }} - {{ airport.name }} ({{ airport.location }})</option>
@@ -272,19 +272,19 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Departure Date</label>
-                                <input type="date" name="required_departure_date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                <input type="date" name="required_departure_date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                             </div>
                             <div id="return-date-field" class="hidden">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Return Date</label>
-                                <input type="date" name="required_return_date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                <input type="date" name="required_return_date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Max Price ($)</label>
-                                <input type="number" name="required_max_price" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                <input type="number" name="required_max_price" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Time Limit (minutes)</label>
-                                <input type="number" name="time_limit_minutes" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]" placeholder="Optional time limit">
+                                <input type="number" name="time_limit_minutes" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]" placeholder="Optional time limit">
                             </div>
                         </div>
                     </div>
@@ -297,15 +297,15 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Adults (12+ years) *</label>
-                                <input type="number" name="required_passengers" id="adultsCount" value="1" min="1" max="9" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]" onchange="updatePassengerForms()">
+                                <input type="number" name="required_passengers" id="adultsCount" value="1" min="1" max="9" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]" onchange="updatePassengerForms()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Children (2-11 years)</label>
-                                <input type="number" name="required_children" id="childrenCount" value="0" min="0" max="8" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]" onchange="updatePassengerForms()">
+                                <input type="number" name="required_children" id="childrenCount" value="0" min="0" max="8" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]" onchange="updatePassengerForms()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Infants (Under 2 years)</label>
-                                <input type="number" name="required_infants" id="infantsCount" value="0" min="0" max="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]" onchange="updatePassengerForms()">
+                                <input type="number" name="required_infants" id="infantsCount" value="0" min="0" max="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]" onchange="updatePassengerForms()">
                                 <p class="text-xs text-gray-500 mt-1">Note: Infants must be accompanied by adults</p>
                             </div>
                         </div>
@@ -313,7 +313,7 @@
                         <!-- Passenger Details Requirements - DYNAMIC FORMS -->
                         <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                             <div class="flex items-center mb-3">
-                                <input type="checkbox" name="require_passenger_details" id="requirePassengerDetails" checked class="mr-2 rounded border-gray-300 text-[#045946] focus:ring-[#045946]" onchange="togglePassengerForms()">
+                                <input type="checkbox" name="require_passenger_details" id="requirePassengerDetails" checked class="mr-2 rounded border-gray-300 text-[#093704] focus:ring-[#093704]" onchange="togglePassengerForms()">
                                 <label class="text-md font-semibold text-gray-700">Require Passenger Details</label>
                             </div>
                             <p class="text-sm text-gray-600 mb-4">Students must provide the following details for each passenger:</p>
@@ -412,7 +412,7 @@
                     <div class="border-t border-gray-200 pt-4">
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Activity Description (Optional)</label>
-                            <textarea name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]" placeholder="Additional details about the activity..."></textarea>
+                            <textarea name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]" placeholder="Additional details about the activity..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -421,7 +421,7 @@
                     <button type="button" onclick="closeActivityModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
                         Cancel
                     </button>
-                    <button type="submit" class="bg-[#045946] hover:bg-[#045946]/80 text-white px-6 py-2 rounded-md transition-colors">
+                    <button type="submit" class="bg-[#093704] hover:bg-[#093704]/80 text-white px-6 py-2 rounded-md transition-colors">
                         Create Activity
                     </button>
                 </div>
@@ -498,10 +498,15 @@
     function openActivityModal() {
         document.getElementById('activityModal').classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
-        // Initialize passenger forms when modal opens
+        
+        // Initialize passenger forms
         updatePassengerForms();
-        // Initialize add-ons functionality
-        initializeAddons();
+        
+        // Initialize add-ons with a slight delay to ensure DOM is ready
+        setTimeout(() => {
+            initializeAddons();
+            generatePassengerAddonSections();
+        }, 100);
     }
 
     function closeActivityModal() {
@@ -693,19 +698,19 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">First Name *</label>
-                    <input type="text" name="passenger_first_name[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946] text-sm" placeholder="Enter first name" required>
+                    <input type="text" name="passenger_first_name[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704] text-sm" placeholder="Enter first name" required>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Middle Name</label>
-                    <input type="text" name="passenger_middle_name[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946] text-sm" placeholder="Enter middle name">
+                    <input type="text" name="passenger_middle_name[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704] text-sm" placeholder="Enter middle name">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Last Name *</label>
-                    <input type="text" name="passenger_last_name[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946] text-sm" placeholder="Enter last name" required>
+                    <input type="text" name="passenger_last_name[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704] text-sm" placeholder="Enter last name" required>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Gender *</label>
-                    <select name="passenger_gender[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946] text-sm" required>
+                    <select name="passenger_gender[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704] text-sm" required>
                         <option value="">Select Gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
@@ -714,11 +719,11 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Date of Birth *</label>
-                    <input type="date" name="passenger_dob[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946] text-sm" required>
+                    <input type="date" name="passenger_dob[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704] text-sm" required>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Nationality *</label>
-                    <input type="text" name="passenger_nationality[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946] text-sm" placeholder="Enter nationality" required>
+                    <input type="text" name="passenger_nationality[]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704] text-sm" placeholder="Enter nationality" required>
                 </div>
             </div>
             <input type="hidden" name="passenger_type[]" value="${type.toLowerCase()}">
@@ -733,142 +738,139 @@
         const requireAddonsCheckbox = document.getElementById('require_addons');
         const addonsSection = document.getElementById('addons-section');
         
-        // Toggle add-ons section
         if (requireAddonsCheckbox && addonsSection) {
+            // Set initial state
+            addonsSection.classList.toggle('hidden', !requireAddonsCheckbox.checked);
+            
             requireAddonsCheckbox.addEventListener('change', function() {
                 addonsSection.classList.toggle('hidden', !this.checked);
                 if (this.checked) {
                     generatePassengerAddonSections();
                 } else {
-                    // Remove passenger add-on sections when add-ons are disabled
                     document.querySelectorAll('.passenger-addon-section').forEach(section => section.remove());
                 }
             });
         }
-        
-        // Initial generation of passenger add-on sections
-        setTimeout(generatePassengerAddonSections, 500);
     }
 
     // NEW: Function to generate per-passenger add-on sections for EVERY passenger
     function generatePassengerAddonSections() {
-        const requirePassengerDetails = document.getElementById('requirePassengerDetails');
-        const requireAddonsCheckbox = document.getElementById('require_addons');
+    const requirePassengerDetails = document.getElementById('requirePassengerDetails');
+    const requireAddonsCheckbox = document.getElementById('require_addons');
+    
+    // Only show add-ons if both passenger details and add-ons are enabled
+    if (!requirePassengerDetails || !requirePassengerDetails.checked || !requireAddonsCheckbox || !requireAddonsCheckbox.checked) {
+        document.querySelectorAll('.passenger-addon-section').forEach(section => section.remove());
+        return;
+    }
+    
+    const adults = parseInt(document.getElementById('adultsCount').value) || 0;
+    const children = parseInt(document.getElementById('childrenCount').value) || 0;
+    const infants = parseInt(document.getElementById('infantsCount').value) || 0;
+    const totalPassengers = adults + children + infants;
+    
+    const addonsSection = document.getElementById('addons-section');
+    if (!addonsSection) return;
+    
+    // Remove existing passenger-specific add-on sections
+    document.querySelectorAll('.passenger-addon-section').forEach(section => section.remove());
+    
+    // If no passengers, return
+    if (totalPassengers === 0) return;
+    
+    // Get the original addons list template
+    const originalAddonsContainer = document.getElementById('original-addons-list');
+    if (!originalAddonsContainer) return;
+    
+    const originalAddons = originalAddonsContainer.querySelectorAll('.bg-white');
+    
+    // Create add-on section for EACH passenger
+    for (let i = 0; i < totalPassengers; i++) {
+        const passengerAddonSection = document.createElement('div');
+        passengerAddonSection.className = 'passenger-addon-section mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200';
         
-        // Only show add-ons if both passenger details and add-ons are enabled
-        if (!requirePassengerDetails || !requirePassengerDetails.checked || !requireAddonsCheckbox || !requireAddonsCheckbox.checked) {
-            // Remove passenger add-on sections if conditions aren't met
-            document.querySelectorAll('.passenger-addon-section').forEach(section => section.remove());
-            return;
+        // Determine passenger type and number
+        let passengerType = 'Adult';
+        let passengerNumber = i + 1;
+        
+        if (i < adults) {
+            passengerType = 'Adult';
+        } else if (i < adults + children) {
+            passengerType = 'Child';
+        } else {
+            passengerType = 'Infant';
         }
         
-        const adults = parseInt(document.getElementById('adultsCount').value) || 0;
-        const children = parseInt(document.getElementById('childrenCount').value) || 0;
-        const infants = parseInt(document.getElementById('infantsCount').value) || 0;
-        const totalPassengers = adults + children + infants;
+        passengerAddonSection.innerHTML = `
+            <h4 class="text-md font-semibold text-blue-800 mb-3">
+                Add-ons for Passenger ${passengerNumber} (${passengerType})
+            </h4>
+            <p class="text-sm text-blue-600 mb-3">Select which add-ons this passenger should have:</p>
+            <div class="space-y-3" id="passenger-${i}-addons">
+                <!-- Add-on checkboxes for this passenger will be inserted here -->
+            </div>
+        `;
         
-        const addonsSection = document.getElementById('addons-section');
-        if (!addonsSection) return;
+        addonsSection.appendChild(passengerAddonSection);
         
-        // Remove existing passenger-specific add-on sections
-        document.querySelectorAll('.passenger-addon-section').forEach(section => section.remove());
+        // Create add-on options for this passenger
+        const passengerAddonsContainer = document.getElementById(`passenger-${i}-addons`);
         
-        // If no passengers, return
-        if (totalPassengers === 0) return;
-        
-        // Create add-on section for EACH passenger
-        for (let i = 0; i < totalPassengers; i++) {
-            const passengerAddonSection = document.createElement('div');
-            passengerAddonSection.className = 'passenger-addon-section mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200';
+        originalAddons.forEach((originalAddon) => {
+            const addonClone = originalAddon.cloneNode(true);
             
-            // Determine passenger type and number
-            let passengerType = 'Adult';
-            let passengerNumber = i + 1;
-            
-            if (i < adults) {
-                passengerType = 'Adult';
-            } else if (i < adults + children) {
-                passengerType = 'Child';
-            } else {
-                passengerType = 'Infant';
-            }
-            
-            passengerAddonSection.innerHTML = `
-                <h4 class="text-md font-semibold text-blue-800 mb-3">
-                    Add-ons for Passenger ${passengerNumber} (${passengerType})
-                </h4>
-                <p class="text-sm text-blue-600 mb-3">Select which add-ons this passenger should have:</p>
-                <div class="space-y-3" id="passenger-${i}-addons">
-                    <!-- Add-on checkboxes for this passenger will be inserted here -->
-                </div>
-            `;
-            
-            addonsSection.appendChild(passengerAddonSection);
-            
-            // Create add-on options for this passenger using JavaScript
-            const passengerAddonsContainer = document.getElementById(`passenger-${i}-addons`);
-
-            // Get the original addons list to use as a template
-            const originalAddonsContainer = document.getElementById('original-addons-list');
-            if (originalAddonsContainer) {
-                const originalAddons = originalAddonsContainer.querySelectorAll('.bg-white');
+            // Update checkbox name for this specific passenger
+            const checkbox = addonClone.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.name = `selected_addons_passenger_${i}[]`;
+                checkbox.value = checkbox.value; // Keep the original value (addon ID)
+                checkbox.checked = false;
                 
-                originalAddons.forEach((originalAddon, addonIndex) => {
-                    const addonClone = originalAddon.cloneNode(true);
-                    const checkbox = addonClone.querySelector('input[type="checkbox"]');
-                    const addonId = checkbox ? checkbox.value : null;
-                    
-                    if (checkbox && addonId) {
-                        // Update the checkbox name for this specific passenger
-                        checkbox.name = `selected_addons_passenger_${i}[]`;
-                        checkbox.checked = false;
-                        
-                        // Update all requirement fields for this passenger
-                        const requirementInputs = addonClone.querySelectorAll('input[type="checkbox"], input[type="number"], textarea');
-                        requirementInputs.forEach(input => {
-                            if (input.name.includes('addon_required_')) {
-                                const currentAddonId = input.name.split('_')[2]; // Extract addon ID
-                                input.name = `addon_required_${currentAddonId}_passenger_${i}`;
-                                input.checked = false;
-                            } else if (input.name.includes('addon_quantity_')) {
-                                const currentAddonId = input.name.split('_')[2]; // Extract addon ID
-                                input.name = `addon_quantity_${currentAddonId}_passenger_${i}`;
-                                input.value = '1';
-                            } else if (input.name.includes('addon_notes_')) {
-                                const currentAddonId = input.name.split('_')[2]; // Extract addon ID
-                                input.name = `addon_notes_${currentAddonId}_passenger_${i}`;
-                                input.value = '';
-                            }
-                        });
-                        
-                        // Add event listener for showing requirements
-                        checkbox.addEventListener('change', function() {
-                            const requirementsDiv = this.closest('.bg-white').querySelector('.addon-requirements');
-                            if (requirementsDiv) {
-                                requirementsDiv.classList.toggle('hidden', !this.checked);
-                            }
-                        });
+                // Update requirement fields for this passenger
+                const requirementInputs = addonClone.querySelectorAll('input, textarea');
+                requirementInputs.forEach(input => {
+                    if (input.name.includes('addon_required_')) {
+                        const addonId = input.name.split('_')[2];
+                        input.name = `addon_required_${addonId}_passenger_${i}`;
+                        input.checked = false;
+                    } else if (input.name.includes('addon_quantity_')) {
+                        const addonId = input.name.split('_')[2];
+                        input.name = `addon_quantity_${addonId}_passenger_${i}`;
+                        input.value = '1';
+                    } else if (input.name.includes('addon_notes_')) {
+                        const addonId = input.name.split('_')[2];
+                        input.name = `addon_notes_${addonId}_passenger_${i}`;
+                        input.value = '';
                     }
-                    
-                    passengerAddonsContainer.appendChild(addonClone);
+                });
+                
+                // Add event listener for showing requirements
+                checkbox.addEventListener('change', function() {
+                    const requirementsDiv = this.closest('.bg-white').querySelector('.addon-requirements');
+                    if (requirementsDiv) {
+                        requirementsDiv.classList.toggle('hidden', !this.checked);
+                    }
                 });
             }
-        }
-        
-        // Add a note about per-passenger add-ons
-        const existingNote = addonsSection.querySelector('.per-passenger-note');
-        if (!existingNote) {
-            const noteDiv = document.createElement('div');
-            noteDiv.className = 'per-passenger-note bg-green-50 border border-green-200 rounded-md p-3 mt-4';
-            noteDiv.innerHTML = `
-                <p class="text-sm text-green-700">
-                    <strong>✓ Per-Passenger Add-ons Enabled:</strong> Each passenger has their own add-on section. 
-                    You can select different add-ons for each passenger and mark them as required individually.
-                </p>
-            `;
-            addonsSection.appendChild(noteDiv);
-        }
+            
+            passengerAddonsContainer.appendChild(addonClone);
+        });
     }
+    
+    // Add instructional note
+    const existingNote = addonsSection.querySelector('.per-passenger-note');
+    if (!existingNote) {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'per-passenger-note bg-green-50 border border-green-200 rounded-md p-3 mt-4';
+        noteDiv.innerHTML = `
+            <p class="text-sm text-green-700">
+                <strong>✓ Per-Passenger Add-ons Enabled:</strong> Each passenger has their own add-on section. 
+                You can select different add-ons for each passenger and mark them as required individually.
+            </p>
+        `;
+        addonsSection.appendChild(noteDiv);
+    }
+}
 
     // Initialize passenger forms when page loads
     document.addEventListener('DOMContentLoaded', function() {

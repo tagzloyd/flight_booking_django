@@ -29,7 +29,7 @@
 
         <!-- Edit Activity Form -->
         <div class="bg-white rounded-lg shadow-lg border border-gray-200">
-            <div class="bg-[#045946] rounded-t-lg px-6 py-4">
+            <div class="bg-[#093704] rounded-t-lg px-6 py-4">
                 <h2 class="text-xl font-semibold text-[#FFC83D]">Edit Activity: {{ activity.title }}</h2>
             </div>
             
@@ -42,28 +42,28 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Activity Title *</label>
                                 <input type="text" name="title" value="{{ activity.title }}" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Activity Type *</label>
                                 <input type="text" name="activity_type" value="{{ activity.activity_type }}" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]"
                                     placeholder="e.g., Flight Booking, Seat Selection, Payment Processing">
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Instructions *</label>
                                 <textarea name="instructions" required rows="4" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">{{ activity.instructions }}</textarea>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">{{ activity.instructions }}</textarea>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
                                 <input type="datetime-local" name="due_date" value="{{ activity.due_date|date:'Y-m-d\TH:i' }}" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Total Points</label>
                                 <input type="number" name="total_points" value="{{ activity.total_points }}" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                             </div>
                         </div>
 
@@ -74,7 +74,7 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Trip Type *</label>
                                     <select name="required_trip_type" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                         <option value="one_way" {% if activity.required_trip_type == 'one_way' %}selected{% endif %}>One Way</option>
                                         <option value="round_trip" {% if activity.required_trip_type == 'round_trip' %}selected{% endif %}>Round Trip</option>
                                     </select>
@@ -82,7 +82,7 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Travel Class *</label>
                                     <select name="required_travel_class" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                         <option value="economy" {% if activity.required_travel_class == 'economy' %}selected{% endif %}>Economy</option>
                                         <option value="premium_economy" {% if activity.required_travel_class == 'premium_economy' %}selected{% endif %}>Premium Economy</option>
                                         <option value="business" {% if activity.required_travel_class == 'business' %}selected{% endif %}>Business</option>
@@ -92,7 +92,7 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Origin Airport *</label>
                                     <select name="required_origin" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                         <option value="">Select Origin Airport</option>
                                         {% for airport in airports %}
                                         <option value="{{ airport.code }}" {% if activity.required_origin == airport.code %}selected{% endif %}>
@@ -104,7 +104,7 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Destination Airport *</label>
                                     <select name="required_destination" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                         <option value="">Select Destination Airport</option>
                                         {% for airport in airports %}
                                         <option value="{{ airport.code }}" {% if activity.required_destination == airport.code %}selected{% endif %}>
@@ -117,25 +117,25 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Departure Date</label>
                                     <input type="date" name="required_departure_date" 
                                         value="{{ activity.required_departure_date|date:'Y-m-d' }}"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                 </div>
                                 <div id="return-date-field" {% if activity.required_trip_type != 'round_trip' %}class="hidden"{% endif %}>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Return Date</label>
                                     <input type="date" name="required_return_date" 
                                         value="{{ activity.required_return_date|date:'Y-m-d' }}"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Max Price ($)</label>
                                     <input type="number" name="required_max_price" step="0.01" 
                                         value="{{ activity.required_max_price }}"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Time Limit (minutes)</label>
                                     <input type="number" name="time_limit_minutes" 
                                         value="{{ activity.time_limit_minutes }}"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]" 
                                         placeholder="Optional time limit">
                                 </div>
                             </div>
@@ -150,17 +150,17 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Adults (12+ years) *</label>
                                     <input type="number" name="required_passengers" value="{{ activity.required_passengers }}" min="1" max="9" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Children (2-11 years)</label>
                                     <input type="number" name="required_children" value="{{ activity.required_children }}" min="0" max="8" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Infants (Under 2 years)</label>
                                     <input type="number" name="required_infants" value="{{ activity.required_infants }}" min="0" max="4" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                     <p class="text-xs text-gray-500 mt-1">Note: Infants must be accompanied by adults</p>
                                 </div>
                             </div>
@@ -170,34 +170,34 @@
                                 <div class="flex items-center mb-3">
                                     <input type="checkbox" name="require_passenger_details" id="require_passenger_details"
                                         {% if activity.require_passenger_details %}checked{% endif %}
-                                        class="mr-2 rounded border-gray-300 text-[#045946] focus:ring-[#045946]">
+                                        class="mr-2 rounded border-gray-300 text-[#093704] focus:ring-[#093704]">
                                     <label class="text-md font-semibold text-gray-700">Require Passenger Details</label>
                                 </div>
                                 <p class="text-sm text-gray-600 mb-4">Students must provide the following details for each passenger:</p>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
                                     <div class="flex items-center">
-                                        <div class="w-2 h-2 bg-[#045946] rounded-full mr-2"></div>
+                                        <div class="w-2 h-2 bg-[#093704] rounded-full mr-2"></div>
                                         <span>First Name</span>
                                     </div>
                                     <div class="flex items-center">
-                                        <div class="w-2 h-2 bg-[#045946] rounded-full mr-2"></div>
+                                        <div class="w-2 h-2 bg-[#093704] rounded-full mr-2"></div>
                                         <span>Middle Name</span>
                                     </div>
                                     <div class="flex items-center">
-                                        <div class="w-2 h-2 bg-[#045946] rounded-full mr-2"></div>
+                                        <div class="w-2 h-2 bg-[#093704] rounded-full mr-2"></div>
                                         <span>Last Name</span>
                                     </div>
                                     <div class="flex items-center">
-                                        <div class="w-2 h-2 bg-[#045946] rounded-full mr-2"></div>
+                                        <div class="w-2 h-2 bg-[#093704] rounded-full mr-2"></div>
                                         <span>Gender</span>
                                     </div>
                                     <div class="flex items-center">
-                                        <div class="w-2 h-2 bg-[#045946] rounded-full mr-2"></div>
+                                        <div class="w-2 h-2 bg-[#093704] rounded-full mr-2"></div>
                                         <span>Date of Birth</span>
                                     </div>
                                     <div class="flex items-center">
-                                        <div class="w-2 h-2 bg-[#045946] rounded-full mr-2"></div>
+                                        <div class="w-2 h-2 bg-[#093704] rounded-full mr-2"></div>
                                         <span>Nationality</span>
                                     </div>
                                 </div>
@@ -207,7 +207,7 @@
                             <div id="passenger-information-section" class="{% if not activity.require_passenger_details %}hidden{% endif %}">
                                 <div class="flex justify-between items-center mb-4">
                                     <h4 class="text-md font-semibold text-gray-800">Passenger Information</h4>
-                                    <button type="button" id="add-passenger-btn" class="bg-[#045946] hover:bg-[#045946]/80 text-white px-3 py-1 rounded-md text-sm">
+                                    <button type="button" id="add-passenger-btn" class="bg-[#093704] hover:bg-[#093704]/80 text-white px-3 py-1 rounded-md text-sm">
                                         Add Passenger
                                     </button>
                                 </div>
@@ -226,22 +226,22 @@
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
                                                     <input type="text" name="passenger_first_name[]" value="{{ passenger.first_name }}" required
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                 </div>
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
                                                     <input type="text" name="passenger_middle_name[]" value="{{ passenger.middle_name|default:'' }}"
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                 </div>
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
                                                     <input type="text" name="passenger_last_name[]" value="{{ passenger.last_name }}" required
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                 </div>
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
                                                     <select name="passenger_gender[]" required
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                         <option value="male" {% if passenger.gender == 'male' %}selected{% endif %}>Male</option>
                                                         <option value="female" {% if passenger.gender == 'female' %}selected{% endif %}>Female</option>
                                                         <option value="other" {% if passenger.gender == 'other' %}selected{% endif %}>Other</option>
@@ -250,18 +250,18 @@
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
                                                     <input type="date" name="passenger_dob[]" value="{{ passenger.date_of_birth|date:'Y-m-d' }}" required
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                 </div>
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">Nationality *</label>
                                                     <input type="text" name="passenger_nationality[]" value="{{ passenger.nationality }}" required
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                 </div>
                                                 <div class="md:col-span-2">
                                                     <div class="flex items-center">
                                                         <input type="checkbox" name="passenger_is_primary[]" value="{{ forloop.counter0 }}" 
                                                             {% if passenger.is_primary %}checked{% endif %}
-                                                            class="mr-2 rounded border-gray-300 text-[#045946] focus:ring-[#045946]">
+                                                            class="mr-2 rounded border-gray-300 text-[#093704] focus:ring-[#093704]">
                                                         <label class="text-sm text-gray-700">Primary Passenger</label>
                                                     </div>
                                                 </div>
@@ -281,22 +281,22 @@
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
                                                     <input type="text" name="passenger_first_name[]" required
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                 </div>
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
                                                     <input type="text" name="passenger_middle_name[]"
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                 </div>
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
                                                     <input type="text" name="passenger_last_name[]" required
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                 </div>
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
                                                     <select name="passenger_gender[]" required
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                         <option value="male">Male</option>
                                                         <option value="female">Female</option>
                                                         <option value="other">Other</option>
@@ -305,17 +305,17 @@
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
                                                     <input type="date" name="passenger_dob[]" required
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                 </div>
                                                 <div>
                                                     <label class="block text-sm font-medium text-gray-700 mb-1">Nationality *</label>
                                                     <input type="text" name="passenger_nationality[]" required
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                                 </div>
                                                 <div class="md:col-span-2">
                                                     <div class="flex items-center">
                                                         <input type="checkbox" name="passenger_is_primary[]" value="0" checked
-                                                            class="mr-2 rounded border-gray-300 text-[#045946] focus:ring-[#045946]">
+                                                            class="mr-2 rounded border-gray-300 text-[#093704] focus:ring-[#093704]">
                                                         <label class="text-sm text-gray-700">Primary Passenger</label>
                                                     </div>
                                                 </div>
@@ -432,7 +432,7 @@
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Activity Description (Optional)</label>
                                 <textarea name="description" rows="3" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]" 
                                     placeholder="Additional details about the activity...">{{ activity.description }}</textarea>
                             </div>
                         </div>
@@ -444,7 +444,7 @@
                             Cancel
                         </a>
                         <button type="submit" 
-                            class="bg-[#045946] hover:bg-[#045946]/80 text-white px-6 py-2 rounded-md transition-colors">
+                            class="bg-[#093704] hover:bg-[#093704]/80 text-white px-6 py-2 rounded-md transition-colors">
                             Update Activity
                         </button>
                     </div>
@@ -527,22 +527,22 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
                             <input type="text" name="passenger_first_name[]" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
                             <input type="text" name="passenger_middle_name[]"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
                             <input type="text" name="passenger_last_name[]" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
                             <select name="passenger_gender[]" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
                                 <option value="other">Other</option>
@@ -551,17 +551,17 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
                             <input type="date" name="passenger_dob[]" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nationality *</label>
                             <input type="text" name="passenger_nationality[]" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#045946]">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#093704]">
                         </div>
                         <div class="md:col-span-2">
                             <div class="flex items-center">
                                 <input type="checkbox" name="passenger_is_primary[]" value="${passengerCount}"
-                                    class="mr-2 rounded border-gray-300 text-[#045946] focus:ring-[#045946]">
+                                    class="mr-2 rounded border-gray-300 text-[#093704] focus:ring-[#093704]">
                                 <label class="text-sm text-gray-700">Primary Passenger</label>
                             </div>
                         </div>
