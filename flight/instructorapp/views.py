@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.contrib import messages
 from django.db import models
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from .models import Section, Activity, ActivitySubmission, SectionEnrollment, ActivityPassenger, ActivityAddOn
 from flightapp.models import User, Student  # Add these imports
 from django.db import models, connection

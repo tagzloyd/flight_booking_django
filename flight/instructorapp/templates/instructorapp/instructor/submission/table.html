@@ -193,6 +193,79 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         tableBody.insertAdjacentHTML("beforeend", row);
       });
+      // --------------------------------------------
+        // AFTER loop: Compute totals per field
+        // --------------------------------------------
+        const totals = {};
+        const fieldsList = ["trip_type","travel_class","adults","children","infants","origin","destination","max_price","passenger"];
+
+        // initialize counters
+        fieldsList.forEach(f => totals[f] = { correct: 0, wrong: 0 });
+
+        // Count
+        data.forEach(sub => {
+          const correctness = {
+            ...Object.fromEntries(
+              Object.entries(sub.correctness || {})
+                .filter(([k, v]) => k !== "passenger" && k !== "passenger_summary")
+                .map(([k, v]) => [k, v === "Correct"])
+            )
+          };
+
+          correctness["passenger"] = (sub.correctness?.passenger_summary === "Correct");
+
+          fieldsList.forEach(f => {
+            if (correctness[f] === true) {
+                // Correct → 1 correct / 0 wrong
+                totals[f].correct += 1;
+            } else {
+                // Wrong or Missing → 0 correct / 1 wrong
+                totals[f].wrong += 1;
+            }
+
+          });
+        });
+
+
+        // --------------------------------------------
+        // INSERT THE TOTALS ROW
+        // --------------------------------------------
+        const totalsRow = `
+        <tr class="border-t-4 border-[#093704] bg-white">
+          <td colspan="5" class="px-4 py-4 text-right font-semibold text-[#093704] text-sm">
+            Overall Field Performance Summary
+          </td>
+
+          ${fieldsList.map(f => {
+              const c = totals[f].correct;
+              const w = totals[f].wrong;
+              const total = c + w;
+
+              const perfect = c === total;
+              const zero = c === 0;
+
+              const colorClass = perfect
+                ? "bg-green-100 text-green-700 border-green-300"
+                : zero
+                ? "bg-red-100 text-red-700 border-red-300"
+                : "bg-gray-100 text-gray-700 border-gray-300";
+
+              return `
+              <td class="px-2 py-3 text-center">
+                <div class="flex justify-center">
+                  <div class="w-16 h-10 flex items-center justify-center rounded-md border ${colorClass} shadow-sm text-sm font-medium">
+                    ${c} / ${w}
+                  </div>
+                </div>
+              </td>
+              `;
+            }).join("")}
+
+          <td></td>
+        </tr>
+        `;
+
+        tableBody.insertAdjacentHTML("beforeend", totalsRow);
     })
     .catch(err => {
       console.error("Fetch error:", err);
